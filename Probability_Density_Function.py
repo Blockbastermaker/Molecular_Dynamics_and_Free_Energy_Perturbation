@@ -18,7 +18,7 @@ os.chdir("//Users//nour//Desktop//Q//FEP_analysis//propranolol//active")
 lambdas=[]
 for filename in glob.glob("FEP2*.log"):
         lambdas.append(filename)
-  
+lambdas.reverse()  
       
 U=[]
 for x in lambdas:       
@@ -78,12 +78,16 @@ for i in dU[-11:-2]:
 for i in dt:
    p=sns.distplot(i, hist = False, kde = True, color="gray",
                  kde_kws = {'lw': 1} )
-p=sns.distplot(dU[-1], hist = False, kde = True,color="blue",
+p=sns.distplot(dU[0], hist = False, kde = True,color="blue",
                  kde_kws = {'shade': True, 'lw': 2},label="State A")
+
 p=sns.distplot(dU[1], hist = False, kde = True, color="gray",
                  kde_kws = {'lw': 1}, label="Intermediate States" )
-p=sns.distplot(dU[0], hist = False, kde = True,color="red",
+
+p=sns.distplot(dU[-1], hist = False, kde = True,color="red",
                  kde_kws = {'shade': True, 'lw': 2},label="State B")
+
+
 
 plt.title(' Probability Density Function of ΔU',fontsize=16)
 plt.xlabel("ΔU")
