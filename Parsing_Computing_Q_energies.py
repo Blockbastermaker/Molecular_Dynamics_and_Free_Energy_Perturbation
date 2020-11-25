@@ -57,7 +57,8 @@ def createDataFrames(rawEnergy):
 if '__name__' == '__main__':
 
 #%%
-    os.chdir("/Users/nour/New_qfep")
+    #os.chdir("/Users/nour/New_qfep") #MAC
+    os.chdir("Z:/jobs/Qfep_NEW/qfep_small")
     EnergyFiles_Lst = [filename for filename in glob.glob("*.en")]  
     State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadBinary(EnergyFiles_Lst)
     State_A_df = createDataFrames(State_A_RawEnergies_Lst)
@@ -77,4 +78,6 @@ Zwanzig_exp
 
 
 # %%
+Energies_df=pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"State_A_G":State_A_df["Lambda"]*State_A_df["Q_sum"] ,"State_B_Lambda":State_B_df["Lambda"],"State_B_G":State_B_df["Lambda"]*State_B_df["Q_sum"],"U":State_A_df["Lambda"]*State_A_df["Q_sum"]+State_B_df["Lambda"]*State_B_df["Q_sum"]})
+
 # %%
