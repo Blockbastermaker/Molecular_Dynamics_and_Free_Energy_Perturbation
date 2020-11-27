@@ -57,8 +57,8 @@ def createDataFrames(rawEnergy):
 if '__name__' == '__main__':
 
 #%%
-    #os.chdir("/Users/nour/New_qfep") #MAC
-    os.chdir("Z:/jobs/Qfep_NEW/qfep_small")
+    os.chdir("/Users/nour/New_qfep/qfep_small2") #MAC
+    #os.chdir("Z:/jobs/Qfep_NEW/qfep_small")
     EnergyFiles_Lst = [filename for filename in glob.glob("*.en")]  
     State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadBinary(EnergyFiles_Lst)
     State_A_df = createDataFrames(State_A_RawEnergies_Lst)
@@ -66,18 +66,43 @@ if '__name__' == '__main__':
 
 
 
-  
 
 
 ##Zwnazig
 # %%
 
-Zwanzig_exp= 0.592*(np.log(np.mean(np.exp((State_A_df["Lambda"]*State_A_df["Q_sum"] + State_B_df["Lambda"]*State_B_df["Q_sum"])*0.592))))
+Zwanzig_exp= -0.592*(np.log(np.mean(np.exp((State_A_df["Lambda"]*State_A_df["Q_sum"] + State_B_df["Lambda"]*State_B_df["Q_sum"])*0.592))))
 Zwanzig_exp
 
 
 
 # %%
-Energies_df=pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"State_A_G":State_A_df["Lambda"]*State_A_df["Q_sum"] ,"State_B_Lambda":State_B_df["Lambda"],"State_B_G":State_B_df["Lambda"]*State_B_df["Q_sum"],"U":State_A_df["Lambda"]*State_A_df["Q_sum"]+State_B_df["Lambda"]*State_B_df["Q_sum"]})
+Energies_df=pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"State_A_G":State_A_df["Lambda"]*State_A_df["Q_sum"] ,"State_B_Lambda":State_B_df["Lambda"],"State_B_G":State_B_df["Lambda"]*State_B_df["Q_sum"],"U":State_A_df["Q_sum"]-State_B_df["Q_sum"]})
+
+# %%
+-0.592*(np.log(np.mean(np.exp((-27.05200000000002)*-0.592))))
+
+# %%
+
+E0= State_A_df["Q_sum"]*State_A_df["Lambda"]+State_B_df["Q_sum"]*State_B_df["Lambda"]
+E1= State_A_df["Q_sum"]*State_B_df["Lambda"]+State_B_df["Q_sum"]*State_A_df["Lambda"]
+
+
+dE=E1-E0
+dE= np.exp(-dE/0.592)
+
+lambdas_dE=[]
+for i in range(0,len(dE),int(len(dE)/2)):
+    lambdas_dE.append(i)
+
+zz = [sum(dE[i:i+int(len(dE)/2)])/len(dE[i:i+int(len(dE)/2)]) for i in lambdas_dE]
+# for i in lambdas_dE:
+
+#     z.(sum(dE[i:i+int(len(dE)/2)])/len(dE[i:i+int(len(dE)/2)]))
+    
+dg=-0.592*np.log(zz)
+
+# %%
+
 
 # %%
