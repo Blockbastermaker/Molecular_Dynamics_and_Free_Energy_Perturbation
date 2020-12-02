@@ -7,7 +7,9 @@ import glob
 from numpy.core.defchararray import array
 from numpy.core.overrides import verify_matching_signatures
 import pandas as pd
+import collections
 
+from pandas.core.frame import DataFrame
 
 #%%
 
@@ -55,11 +57,11 @@ def createDataFrames(rawEnergy):
 
 #%%
 
-if '__name__' == '__main__':
+#if '__name__' == '__main__':
 
 #%%
-    os.chdir("/Users/nour/New_qfep") #MAC
-    #os.chdir("Z:/jobs/Qfep_NEW/qfep_small")
+    #os.chdir("/Users/nour/New_qfep") #MAC
+    os.chdir("Z:/jobs/Qfep_NEW/qfep_small")
     EnergyFiles_Lst = [filename for filename in glob.glob("*.en")]  
     State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadBinary(EnergyFiles_Lst)
     State_A_df = createDataFrames(State_A_RawEnergies_Lst)
@@ -78,74 +80,71 @@ if '__name__' == '__main__':
 
 
 # %%
-Energies_df=pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"State_A_G":State_A_df["Q_sum"] ,"State_B_Lambda":State_B_df["Lambda"],"State_B_G":State_B_df["Q_sum"],"E":State_B_df["Q_sum"] - State_A_df["Q_sum"] })
+# Energies_df=pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"State_A_G":State_A_df["Q_sum"] ,"State_B_Lambda":State_B_df["Lambda"],"State_B_G":State_B_df["Q_sum"],"E":State_B_df["Q_sum"] - State_A_df["Q_sum"] })
 
 # %%
--0.592*(np.log(np.mean(np.exp((-27.05200000000002)*-0.592))))
+# -0.592*(np.log(np.mean(np.exp((-27.05200000000002)*-0.592))))
 
 # %%
 
-E0= State_A_df["Q_sum"]*State_A_df["Lambda"]+State_B_df["Q_sum"]*State_B_df["Lambda"]
-E1= State_A_df["Q_sum"]*State_B_df["Lambda"]+State_B_df["Q_sum"]*State_A_df["Lambda"]
+# E0= State_A_df["Q_sum"]*State_A_df["Lambda"]+State_B_df["Q_sum"]*State_B_df["Lambda"]
+# E1= State_A_df["Q_sum"]*State_B_df["Lambda"]+State_B_df["Q_sum"]*State_A_df["Lambda"]
 
 
-dE=E1-E0
-dE= np.exp(-dE/0.592)
+# dE=E1-E0
+# dE= np.exp(-dE/0.592)
 
-lambdas_dE=[]
-for i in range(0,len(dE),int(len(dE)/2)):
-    lambdas_dE.append(i)
+# lambdas_dE=[]
+# for i in range(0,len(dE),int(len(dE)/2)):
+#     lambdas_dE.append(i)
 
-zz = [sum(dE[i:i+int(len(dE)/2)])/len(dE[i:i+int(len(dE)/2)]) for i in lambdas_dE]
-# for i in lambdas_dE:
+# zz = [sum(dE[i:i+int(len(dE)/2)])/len(dE[i:i+int(len(dE)/2)]) for i in lambdas_dE]
+# # for i in lambdas_dE:
 
-#     z.(sum(dE[i:i+int(len(dE)/2)])/len(dE[i:i+int(len(dE)/2)]))
+# #     z.(sum(dE[i:i+int(len(dE)/2)])/len(dE[i:i+int(len(dE)/2)]))
     
-dg=-0.592*np.log(zz)
-dg
+# dg=-0.592*np.log(zz)
+# dg
 # %%
 
 
 # %%
-Energies_df=pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"E":State_B_df["Q_sum"] - State_A_df["Q_sum"] })
+# Energies_df=pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"E":State_B_df["Q_sum"] - State_A_df["Q_sum"] })
 
 # %%
 
-A=pd.DataFrame(dict(Energies_df.groupby('State_A_Lambda',sort=False)['State_A_G'].apply(list)))
-B=pd.DataFrame(dict(Energies_df.groupby('State_B_Lambda',sort=False)['State_B_G'].apply(list)))
+# A=pd.DataFrame(dict(Energies_df.groupby('State_A_Lambda',sort=False)['State_A_G'].apply(list)))
+# B=pd.DataFrame(dict(Energies_df.groupby('State_B_Lambda',sort=False)['State_B_G'].apply(list)))
 
-E0=(A*A.columns).values+(B*B.columns).values
-E1=(A*list((A.columns).values)[::-1]).values+(B*list((B.columns).values)[::-1]).values
-dE=pd.DataFrame(E1-E0)
+# E0=(A*A.columns).values+(B*B.columns).values
+# E1=(A*list((A.columns).values)[::-1]).values+(B*list((B.columns).values)[::-1]).values
+# dE=pd.DataFrame(E1-E0)
 
-dG=pd.DataFrame(-0.592*np.log(np.mean(np.exp(-pd.DataFrame(E1-E0)/0.592))))
+# dG=pd.DataFrame(-0.592*np.log(np.mean(np.exp(-pd.DataFrame(E1-E0)/0.592))))
 
 
 # %%  
 Energies_df=pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"State_A_G":State_A_df["Q_sum"] ,"State_B_Lambda":State_B_df["Lambda"],"State_B_G":State_B_df["Q_sum"],"E":State_B_df["Q_sum"] - State_A_df["Q_sum"] })
-
+Energies_df=Energies_df.sort_values('State_A_Lambda')
 A_dict=dict(Energies_df.groupby('State_A_Lambda',sort=False)['State_A_G'].apply(list))
-B_dict=dict(Energies_df.groupby('State_B_Lambda',sort=False)['State_B_G'].apply(list))  
+B_dict=dict(Energies_df.groupby('State_B_Lambda',sort=False)['State_B_G'].apply(list)) 
+
+
 dG=[]
-for i in range(len(A_dict.keys())-1):
-    print(i)
-    A=pd.DataFrame({((list(A_dict.keys())[i])):(A_dict.get(list(A_dict.keys())[i])),((list(A_dict.keys())[i+1])):(A_dict.get(list(A_dict.keys())[i+1]))})
-    B=pd.DataFrame({((list(B_dict.keys())[i])):(B_dict.get(list(B_dict.keys())[i])),((list(B_dict.keys())[i+1])):(B_dict.get(list(B_dict.keys())[i+1]))})
-    
+dEs=pd.DataFrame()
+for i in range(len(A_dict.keys())-1): #reversed()
+    # A=pd.DataFrame({((list(A_dict.keys())[i])):(A_dict.get(list(A_dict.keys())[i])),((list(A_dict.keys())[i+1])):(A_dict.get(list(A_dict.keys())[i+1]))})
+    # B=pd.DataFrame({((list(B_dict.keys())[i])):(B_dict.get(list(B_dict.keys())[i])),((list(B_dict.keys())[i+1])):(B_dict.get(list(B_dict.keys())[i+1]))})
+    A = pd.DataFrame.from_dict({((list(A_dict.keys())[i])):(A_dict.get(list(A_dict.keys())[i])),((list(A_dict.keys())[i+1])):(A_dict.get(list(A_dict.keys())[i+1]))}, orient='index').transpose()
+    B = pd.DataFrame.from_dict({((list(B_dict.keys())[i])):(B_dict.get(list(B_dict.keys())[i])),((list(B_dict.keys())[i+1])):(B_dict.get(list(B_dict.keys())[i+1]))}, orient='index').transpose()
     E0=(A*A.columns).values+(B*B.columns).values
     E1=(A*list((A.columns).values)[::-1]).values+(B*list((B.columns).values)[::-1]).values
-    dE=pd.DataFrame(E1-E0)
-    dG.append(-0.592*np.log(np.mean(np.exp(-pd.DataFrame(E1-E0)/0.592))))
-
-# for i in reversed(range(len(A_dict.keys())-1)):
-#     print(i)
-#     A=pd.DataFrame({((list(A_dict.keys())[i])):(A_dict.get(list(A_dict.keys())[i])),((list(A_dict.keys())[i-1])):(A_dict.get(list(A_dict.keys())[i-1]))})
-#     B=pd.DataFrame({((list(B_dict.keys())[i])):(B_dict.get(list(B_dict.keys())[i])),((list(B_dict.keys())[i-1])):(B_dict.get(list(B_dict.keys())[i-1]))})
-    
-#     E0=(A*A.columns).values+(B*B.columns).values
-#     E1=(A*list((A.columns).values)[::-1]).values+(B*list((B.columns).values)[::-1]).values
-#     dE=pd.DataFrame(E1-E0)
-#     dG.append(-0.592*np.log(np.mean(np.exp(-pd.DataFrame(E1-E0)/0.592))))
+    #print(((list(A_dict.keys())[i])),((list(A_dict.keys())[i+1])),((list(B_dict.keys())[i])),((list(B_dict.keys())[i+1])))
+    #dEs[str((list(A_dict.keys())[i]))+"_"+str((list(A_dict.keys())[i+1]))+"-"+str((list(B_dict.keys())[i]))+"_"+str((list(B_dict.keys())[i+1]))]=E1-E0
+    dE=pd.DataFrame(E1-E0,columns=[str(A.columns.values[0])+"_"+str(B.columns.values[0])+"-"+str(A.columns.values[1])+"_"+str(B.columns.values[1]),str(A.columns.values[1])+"_"+str(B.columns.values[1])+"-"+str(A.columns.values[0])+"_"+str(B.columns.values[0])])
+    dEs=dEs.append(dE.transpose())
+    dG.append(-0.592*np.log(np.mean(np.exp(-dE/0.592))))
+dEs=dEs.transpose()
 
 dG=[item for sublist in dG for item in sublist]
 dGF=[]
@@ -159,6 +158,18 @@ Zwanzig_df=pd.DataFrame.from_dict({"dGF":dGF,"dGR":dGR})
 Zwanzig_exp=-np.mean(abs(np.sum((Zwanzig_df))))
 Zwanzig_exp
 # %%
-
+#def Zwnazig(dEs_df):
+dEs_df=pd.DataFrame(-0.592*np.log(np.mean(np.exp(-dEs/0.592))))
+# Zwanzig_df=pd.DataFrame(columns=["Lambda","dG_Forward","dG_Reverse","Avarage"])
+dGF=[]
+dGR=[]
+Lambdas=[]
+for i in range(0,len(dEs_df.index),2):
+    Lambdas.append(dEs_df.index[i-1].split("_")[0])
+    dGF.append(dEs_df.iloc[i,0])
+    dGR.append(dEs_df.iloc[i-1,0])
+Zwanzig_df=pd.DataFrame.from_dict({"Lambda":Lambdas,"dG_Forward":dGF,"dG_Reverse":dGR})
+Zwanzig_df
+    # Zwanzig_df["dG_Reverse"]=Zwanzig_df["dG_Reverse"].append(dEs_df.iloc[i-1],ignore_index=True)
 
 # %%
