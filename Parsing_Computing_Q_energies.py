@@ -62,8 +62,8 @@ def createDataFrames(rawEnergy):
 
 #%%
     #os.chdir("/Users/nour/New_qfep") #MAC
-    os.chdir("Z:/jobs/Qfep_NEW/qfep_small")
-    EnergyFiles_Lst = [filename for filename in glob.glob("*.en")]  
+    os.chdir("Z:/jobs/Qfep_NEW/")
+    EnergyFiles_Lst = [filename for filename in glob.glob("FEP3*.en")]  
     State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadBinary(EnergyFiles_Lst)
     State_A_df = createDataFrames(State_A_RawEnergies_Lst)
     State_B_df = createDataFrames(State_B_RawEnergies_Lst)
@@ -181,12 +181,15 @@ for i in range(len(dGF)):
     dGF_sum.append(sum(dGF[:i+1]))
     dGR_sum.append(sum(dGR[:i+1]))
 
-dG_average_raw=(pd.DataFrame(list((Zwanzig_df["dG_Forward"][1:])))-pd.DataFrame(list(Zwanzig_df["dG_Reverse"][:-1])))/2
+dG_average_raw=((pd.DataFrame(dGF[1:]))-pd.DataFrame(dGR[1:][::-1]))/2
+
 for i in range(len(list(dG_average_raw.values))):
     dG_Average.append(np.sum(dG_average_raw.values[:i+1]))
 
 
+#Zwanzig_df=pd.DataFrame.from_dict({"Lambda":Lambdas,"dG_Forward":dGF,"SUM_dG_Forward":dGF_sum,"dG_Reverse":dGR[::-1]})
 Zwanzig_df=pd.DataFrame.from_dict({"Lambda":Lambdas,"dG_Forward":dGF,"SUM_dG_Forward":dGF_sum,"dG_Reverse":dGR[::-1],"SUM_dG_Reverse":dGR_sum[::-1],"dG_Average":dG_Average})
+
 Zwanzig_df
 
 # %%
