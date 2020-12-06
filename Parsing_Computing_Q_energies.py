@@ -4,9 +4,7 @@ import numpy as np
 import itertools
 import os
 import glob
-from numpy.core.defchararray import array
-from numpy.core.overrides import verify_matching_signatures
-from numpy.lib.function_base import average
+import matplotlib.pyplot as plt
 import pandas as pd
 import re
 
@@ -110,9 +108,18 @@ def Zwnazig_Estimator(dEs_df):
         dG_Average.append(np.sum(dG_average_raw.values[:i+1]))
 
     Zwanzig_df=pd.DataFrame.from_dict({"Lambda":Lambdas,"dG_Forward":dGF,"SUM_dG_Forward":dGF_sum,"dG_Reverse":dGR[::-1],"SUM_dG_Reverse":dGR_sum[::-1],"dG_Average":dG_Average})
-    Zwanzig_final_dG = Zwanzig_df['dG_Average'].iloc[-1]
-    return Zwanzig_df, Zwanzig_final_dG
+    Zwanzig_Final_dG = Zwanzig_df['dG_Average'].iloc[-1]
+    return Zwanzig_df, Zwanzig_Final_dG
 
+
+
+def Plot_dG(df):
+    p=plt.plot(df.iloc[:,2],'.',label= "ΔGf")
+    p=plt.plot(df.iloc[:,4][::-1],'.',label ="ΔGr")
+    plt.title('Hysteresis between ΔGf and ΔGr',fontsize=16)
+    plt.xlabel("λ",fontsize=14)
+    plt.ylabel("ΔG FEP (Kcal/mol)",fontsize=14)
+    plt.legend()
 #%%
 
 #if '__name__' == '__main__':
@@ -125,8 +132,8 @@ def Zwnazig_Estimator(dEs_df):
     State_A_df = createDataFrames(State_A_RawEnergies_Lst)
     State_B_df = createDataFrames(State_B_RawEnergies_Lst)
     dEs =  dE_Calculation2(None)
-    Zwanzig_df, Zwanzig_final_dG= Zwnazig_Estimator(dEs)
-
+    Zwanzig_df, Zwanzig_Final_dG= Zwnazig_Estimator(dEs)
+    Plot_dG(Zwanzig_df)
 
 
 
