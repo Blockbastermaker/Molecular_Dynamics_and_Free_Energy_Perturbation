@@ -8,8 +8,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import re
 
-from pandas.core.frame import DataFrame
-
 #%%
 
 
@@ -120,13 +118,15 @@ def Plot_dG(df):
     plt.xlabel("λ",fontsize=14)
     plt.ylabel("ΔG FEP (Kcal/mol)",fontsize=14)
     plt.legend()
+    plt.savefig('Hysteresis.png',dpi=200)
 #%%
 
 #if '__name__' == '__main__':
 
 #%%
     #os.chdir("/Users/nour/New_qfep/qfep_small") #MAC
-    os.chdir("Z:/jobs/Qfep_NEW/qfep_small")
+    #os.chdir("Z:/jobs/Qfep_NEW/qfep_small")
+    os.chdir("G:/PhD/Project/En")
     EnergyFiles_Lst = [filename for filename in glob.glob("FEP*.en")]  
     State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadBinary(EnergyFiles_Lst)
     State_A_df = createDataFrames(State_A_RawEnergies_Lst)
