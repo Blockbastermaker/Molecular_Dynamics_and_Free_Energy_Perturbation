@@ -1,13 +1,11 @@
 #%%
 import struct
 import numpy as np
-import itertools
 import os
 import glob
 import matplotlib.pyplot as plt
 import pandas as pd
 import re
-import time
 #%%
 
 
@@ -69,7 +67,7 @@ def ReadBinary2(EnergyFiles_Lst):
         ## Check Q_Energies Version !!!
 
         if "6." in Version_Check_Str: HeaderSize_int += 4
-        elif not '5.' in Version_Check_Str: # and not "6." in Version_Check_Str:
+        elif not '5.' in Version_Check_Str: 
             print("Pleaes Check the your Qdyn verion in file: "+file +" ----> format is NOT Supported !!! ")
             exit()
             
@@ -96,7 +94,6 @@ def dE_Calculation2(steps):
     
     dEs=pd.DataFrame()
     Energies_df=(pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"State_A_G":State_A_df["Q_sum"] ,"State_B_Lambda":State_B_df["Lambda"],"State_B_G":State_B_df["Q_sum"],"E":State_B_df["Q_sum"] - State_A_df["Q_sum"] })).sort_values('State_A_Lambda')
-    Energies_df.iloc[:1]
     State_A_Energies_dict=dict(Energies_df.groupby('State_A_Lambda',sort=False)['State_A_G'].apply(list))
     State_B_Energies_dict=dict(Energies_df.groupby('State_B_Lambda',sort=False)['State_B_G'].apply(list)) 
 
@@ -166,196 +163,10 @@ def Plot_dG(df):
     #os.chdir("Z:/jobs/Qfep_NEW/qfep_small/test")"
     #os.chdir("G:/PhD/Project/En")
     
-    t0 = time.time()
     EnergyFiles_Lst = [filename for filename in glob.glob("FEP*.en")]  
-    
-
     State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadBinary2(EnergyFiles_Lst)
-
     State_A_df = createDataFrames(State_A_RawEnergies_Lst)
     State_B_df = createDataFrames(State_B_RawEnergies_Lst)
-
     dEs =  dE_Calculation2(None)
-    t1 = time.time()
-    print(t1-t0)
     Zwanzig_df, Zwanzig_Final_dG= Zwnazig_Estimator(dEs)
     Plot_dG(Zwanzig_df)
-
-
-
-##dEs
-#%%
-
-# %%  
-Energies_df=pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"State_A_G":State_A_df["Q_sum"] ,"State_B_Lambda":State_B_df["Lambda"],"State_B_G":State_B_df["Q_sum"],"E":State_B_df["Q_sum"] - State_A_df["Q_sum"] })
-Energies_df=Energies_df.sort_values('State_A_Lambda')
-A_dict=dict(Energies_df.groupby('State_A_Lambda',sort=False)['State_A_G'].apply(list))
-B_dict=dict(Energies_df.groupby('State_B_Lambda',sort=False)['State_B_G'].apply(list)) 
-
-
-dG=[]
-dEs=pd.DataFrame()
-for i in range(len(A_dict.keys())-1): #reversed()
-    # A=pd.DataFrame({((list(A_dict.keys())[i])):(A_dict.get(list(A_dict.keys())[i])),((list(A_dict.keys())[i+1])):(A_dict.get(list(A_dict.keys())[i+1]))})
-    # B=pd.DataFrame({((list(B_dict.keys())[i])):(B_dict.get(list(B_dict.keys())[i])),((list(B_dict.keys())[i+1])):(B_dict.get(list(B_dict.keys())[i+1]))})
-    A = pd.DataFrame.from_dict({((list(A_dict.keys())[i])):(A_dict.get(list(A_dict.keys())[i])),((list(A_dict.keys())[i+1])):(A_dict.get(list(A_dict.keys())[i+1]))}, orient='index').transpose()
-    B = pd.DataFrame.from_dict({((list(B_dict.keys())[i])):(B_dict.get(list(B_dict.keys())[i])),((list(B_dict.keys())[i+1])):(B_dict.get(list(B_dict.keys())[i+1]))}, orient='index').transpose()
-    E0=(A*A.columns).values+(B*B.columns).values
-    E1=(A*list((A.columns).values)[::-1]).values+(B*list((B.columns).values)[::-1]).values
-    #print(((list(A_dict.keys())[i])),((list(A_dict.keys())[i+1])),((list(B_dict.keys())[i])),((list(B_dict.keys())[i+1])))
-    #dEs[str((list(A_dict.keys())[i]))+"_"+str((list(A_dict.keys())[i+1]))+"-"+str((list(B_dict.keys())[i]))+"_"+str((list(B_dict.keys())[i+1]))]=E1-E0
-    dE=pd.DataFrame(E1-E0,columns=[str(A.columns.values[0])+"_"+str(B.columns.values[0])+"-"+str(A.columns.values[1])+"_"+str(B.columns.values[1]),str(A.columns.values[1])+"_"+str(B.columns.values[1])+"-"+str(A.columns.values[0])+"_"+str(B.columns.values[0])])
-    dEs=dEs.append(dE.transpose())
-    dG.append(-0.592*np.log(np.mean(np.exp(-dE/0.592))))
-dEs=dEs.transpose()
-
-dG=[item for sublist in dG for item in sublist]
-dGF=[]
-dGR=[]
-#dGF=[k for k in range(len(dG)) if k %2]
-for i in range(1,len(dG),2):
-    dGF.append(dG[i])
-    dGR.append(dG[i-1])
-   #print( A_dict.get(list(A_dict.keys())[i]))
-Zwanzig_df=pd.DataFrame.from_dict({"dGF":dGF,"dGR":dGR})
-Zwanzig_exp=-np.mean(abs(np.sum((Zwanzig_df))))
-Zwanzig_exp
-
-
-# %%
-#def Zwnazig(dEs_df):
-dEs_df=pd.DataFrame(-0.592*np.log(np.mean(np.exp(-dEs/0.592))))
-Lambdas=[]
-dGF=[]
-dGF_sum=[]
-dGR=[]
-dGR_sum=[]
-dG_Average=[]
-dGR.append(0.0)
-dG_Average.append(0.0)
-
-for i in range(1,len(dEs_df.index),2):
-    Lambdas.append(re.split('_|-',dEs_df.index[i-1])[1])
-    dGF.append(dEs_df.iloc[i,0])
-    dGR.append(dEs_df.iloc[i-1,0])
-Lambdas.append(re.split('_|-',dEs_df.index[-1])[1])
-dGF.append(0.0)
-dGF=dGF[::-1]
-for i in range(len(dGF)):
-    dGF_sum.append(sum(dGF[:i+1]))
-    dGR_sum.append(sum(dGR[:i+1]))
-
-dG_average_raw=((pd.DataFrame(dGF[1:]))-pd.DataFrame(dGR[1:][::-1]))/2
-
-for i in range(len(list(dG_average_raw.values))):
-    dG_Average.append(np.sum(dG_average_raw.values[:i+1]))
-
-
-#Zwanzig_df=pd.DataFrame.from_dict({"Lambda":Lambdas,"dG_Forward":dGF,"SUM_dG_Forward":dGF_sum,"dG_Reverse":dGR[::-1]})
-Zwanzig_df=pd.DataFrame.from_dict({"Lambda":Lambdas,"dG_Forward":dGF,"SUM_dG_Forward":dGF_sum,"dG_Reverse":dGR[::-1],"SUM_dG_Reverse":dGR_sum[::-1],"dG_Average":dG_Average})
-
-Zwanzig_df['dG_Average'].iloc[-1]
-
-# %%
-os.chdir("Z:/jobs/Qfep_NEW/qfep_small/test")
-State_A_RawEnergies = []
-State_B_RawEnergies = []
-EnergyFiles_Lst = [filename for filename in glob.glob("FEP*.en")]  
-
-for file in EnergyFiles_Lst:
-    with open(file,'rb') as f: fileContent = f.read()
-
-    Version_Check_Str=str(list(struct.unpack("c" * ((len(fileContent[32:112]))//1),fileContent[32:112]))).replace("b'", "").strip("[],' '").replace("'","").replace(",","").replace(" ","")
-
-    EnergyFileLength_int=len(fileContent)
-    BinaryChankSize_int=120
-    NextBinaryChank_int=272
-    HeaderSize_int=124
-    State_B_Shift_int=132
-    binary_structre=15*"d"+6*"h"+15*"d"+6*"h"
-    steps=int((len(fileContent))/388))
-    ## Check Q_Energies Version !!!
-
-    if "6." in Version_Check_Str: HeaderSize_int += 4
-    
-    if not '5.' in Version_Check_Str and not "6." in Version_Check_Str:
-        print("Pleaes Check the your Qdyn verion in file: "+file +" ----> format is NOT Supported !!! ")
-        exit()
-        
-
-
-    for Byte in range(HeaderSize_int, EnergyFileLength_int, NextBinaryChank_int):
-
-        struct.unpack("="+(binary_structre* steps),fileContent)
-        State_A_RawEnergies.append(State_A_Lst)
-        State_B_RawEnergies.append(State_B_Lst)
-
-
-
-# %%
-#YESSSSSSSSSSSSSSSSS
-import time
-os.chdir("/Users/nour/New_qfep/qfep_small/test2")
-
-
-t0 = time.time()
-
-State_A_RawEnergies = []
-State_B_RawEnergies = []
-EnergyFiles_Lst = [filename for filename in glob.glob("FEP*.en")]  
-
-for file in EnergyFiles_Lst:
-    with open(file,'rb') as f: fileContent = f.read()
-    binary_structre=15*"d"+6*"h"+15*"d"+10*"h"
-    steps=int((len(fileContent)-116)/272)-1
-    x=struct.unpack("="+(binary_structre* steps),fileContent[124:-264])
-    Next_step=46
-    A = [x[i:(i + 15)] for i in range(0, len(x), Next_step)]
-    B = [x[i:(i + 15)] for i in range(21, len(x), Next_step)]
-t1 = time.time()
-print(t1-t0)
-
-##########################################
-#%%
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#%%
-struct.unpack(15* "d",fileContent[124:244])
-struct.unpack(6* "h",fileContent[244:256])
-struct.unpack(15* "d",fileContent[256:376])
-struct.unpack(10* "h",fileContent[376:396])
-struct.unpack(15* "d",fileContent[396:516])
-struct.unpack(6* "h",fileContent[516:528])
-struct.unpack(15* "d",fileContent[528:648])
-struct.unpack(6* "h",fileContent[648:])
-
-# %%
-fileContent=(388-116)*5
-steps=((fileContent)/272)
-steps
-# %%
-x= list(range(0,388)
-len(x[124:244])
-x[244:256]
-len(x[4:32])
-
-struct.calcsize(fileContent[4:32])
-    binary_structre=2*"h"+7*"i"+80*"c"+6*"h"+15*"d"+6*"h"+15*"d"+6*"h"
