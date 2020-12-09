@@ -56,7 +56,7 @@ def createDataFrames(rawEnergy):
 
 
 #%%
-def dE_Calculation2(steps):
+def dE_Calculation(steps):
     
     dEs=pd.DataFrame()
     Energies_df=(pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"State_A_G":State_A_df["Q_sum"] ,"State_B_Lambda":State_B_df["Lambda"],"State_B_G":State_B_df["Q_sum"],"E":State_B_df["Q_sum"] - State_A_df["Q_sum"] })).sort_values('State_A_Lambda')
@@ -133,7 +133,7 @@ def Plot_dG(df):
     State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadBinary(EnergyFiles_Lst)
     State_A_df = createDataFrames(State_A_RawEnergies_Lst)
     State_B_df = createDataFrames(State_B_RawEnergies_Lst)
-    dEs =  dE_Calculation2(None)
+    dEs =  dE_Calculation(None)
     Zwanzig_df, Zwanzig_Final_dG= Zwnazig_Estimator(dEs)
     Plot_dG(Zwanzig_df)
 # %%
