@@ -125,8 +125,8 @@ def Plot_dG(df):
 
 #%%
     #os.chdir("/Users/nour/New_qfep/qfep_small") #MAC
-    #os.chdir("Z:/jobs/Qfep_NEW/qfep_small")
-    os.chdir("G:/PhD/Project/En")
+    os.chdir("Z:/jobs/Qfep_NEW/qfep_small/test")
+    #os.chdir("G:/PhD/Project/En")
     EnergyFiles_Lst = [filename for filename in glob.glob("FEP*.en")]  
     State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadBinary(EnergyFiles_Lst)
     State_A_df = createDataFrames(State_A_RawEnergies_Lst)
@@ -211,3 +211,72 @@ Zwanzig_df=pd.DataFrame.from_dict({"Lambda":Lambdas,"dG_Forward":dGF,"SUM_dG_For
 Zwanzig_df['dG_Average'].iloc[-1]
 
 # %%
+os.chdir("Z:/jobs/Qfep_NEW/qfep_small/test")
+State_A_RawEnergies = []
+State_B_RawEnergies = []
+EnergyFiles_Lst = [filename for filename in glob.glob("FEP*.en")]  
+
+for file in EnergyFiles_Lst:
+    with open(file,'rb') as f: fileContent = f.read()
+
+    Version_Check_Str=str(list(struct.unpack("c" * ((len(fileContent[32:112]))//1),fileContent[32:112]))).replace("b'", "").strip("[],' '").replace("'","").replace(",","").replace(" ","")
+
+    EnergyFileLength_int=len(fileContent)
+    BinaryChankSize_int=120
+    NextBinaryChank_int=272
+    HeaderSize_int=124
+    State_B_Shift_int=132
+    binary_structre=15*"d"+6*"h"+15*"d"+6*"h"
+    steps=int((len(fileContent))/388))
+    ## Check Q_Energies Version !!!
+
+    if "6." in Version_Check_Str: HeaderSize_int += 4
+    
+    if not '5.' in Version_Check_Str and not "6." in Version_Check_Str:
+        print("Pleaes Check the your Qdyn verion in file: "+file +" ----> format is NOT Supported !!! ")
+        exit()
+        
+
+
+    for Byte in range(HeaderSize_int, EnergyFileLength_int, NextBinaryChank_int):
+
+        struct.unpack("="+(binary_structre* steps),fileContent)
+        State_A_RawEnergies.append(State_A_Lst)
+        State_B_RawEnergies.append(State_B_Lst)
+# %%
+#YESSSSSSSSSSSSSSSSS
+os.chdir("Z:/jobs/Qfep_NEW/qfep_small/test")
+State_A_RawEnergies = []
+State_B_RawEnergies = []
+EnergyFiles_Lst = [filename for filename in glob.glob("FEP*.en")]  
+
+for file in EnergyFiles_Lst:
+    with open(file,'rb') as f: fileContent = f.read()
+    binary_structre=15*"d"+6*"h"+15*"d"+10*"h"
+    steps=int((len(fileContent)-116)/272)-1
+    x=struct.unpack("="+(binary_structre* steps),fileContent[124:-264])
+print(x)
+##########################################
+#%%
+
+struct.unpack(15* "d",fileContent[124:244])
+struct.unpack(6* "h",fileContent[244:256])
+struct.unpack(15* "d",fileContent[256:376])
+struct.unpack(10* "h",fileContent[376:396])
+struct.unpack(15* "d",fileContent[396:516])
+struct.unpack(6* "h",fileContent[516:528])
+struct.unpack(15* "d",fileContent[528:648])
+struct.unpack(6* "h",fileContent[648:])
+
+# %%
+fileContent=(388-116)*5
+steps=((fileContent)/272)
+steps
+# %%
+x= list(range(0,388)
+len(x[124:244])
+x[244:256]
+len(x[4:32])
+
+struct.calcsize(fileContent[4:32])
+    binary_structre=2*"h"+7*"i"+80*"c"+6*"h"+15*"d"+6*"h"+15*"d"+6*"h"
