@@ -4,8 +4,13 @@ import numpy as np
 import os
 import glob
 import matplotlib.pyplot as plt
+from numpy.core.fromnumeric import transpose
 import pandas as pd
 import re
+import cProfile
+
+from pandas.core.frame import DataFrame
+
 #%%
 
 
@@ -76,7 +81,21 @@ def dE_Calculation(steps):
         dE=pd.DataFrame(E1-E0,columns=[str(State_A_Lambda_float.values[0])+"_"+str(State_B_Lambda_float.values[0])+"-"+str(State_A_Lambda_float.values[1])+"_"+str(State_B_Lambda_float.values[1]),str(State_A_Lambda_float.values[1])+"_"+str(State_B_Lambda_float.values[1])+"-"+str(State_A_Lambda_float.values[0])+"_"+str(State_B_Lambda_float.values[0])])
         dEs=dEs.append(dE.transpose())
     
-    return dEs.transpose()
+    return dEs.transpose(Energies_df[:,:2]
+
+#%%
+#Energies_df[:,:2]
+Energies_df=(pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"State_A_G":State_A_df["Q_sum"] ,"State_B_Lambda":State_B_df["Lambda"],"State_B_G":State_B_df["Q_sum"],"E":State_B_df["Q_sum"] - State_A_df["Q_sum"] })).sort_values('State_A_Lambda')
+
+Energies_df_A=(Energies_df.iloc[:,:2]).groupby('State_A_Lambda',sort=False)
+
+State_A_Energies=pd.DataFrame(Energies_df.groupby('State_A_Lambda',sort=False)['State_A_G']).transpose()
+State_A_Energies=pd.DataFrame(State_A_Energies.values[1:],columns=State_A_Energies.iloc[0])
+
+for i in range(len(State_A_Energies.columns)):
+    print(State_A_Energies.iloc[:,i])
+
+
 
 #%%
 def Zwnazig_Estimator(dEs_df):
@@ -125,10 +144,9 @@ def Plot_dG(df):
 #if '__name__' == '__main__':
 
 #%%
-    #os.chdir("/Users/nour/New_qfep/") #MAC
+    os.chdir("/Users/nour/New_qfep/") #MAC
     #os.chdir("Z:/jobs/Qfep_NEW/qfep_small/test")"
     #os.chdir("G:/PhD/Project/En")
-    
     EnergyFiles_Lst = [filename for filename in glob.glob("FEP*.en")]  
     State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadBinary(EnergyFiles_Lst)
     State_A_df = createDataFrames(State_A_RawEnergies_Lst)
