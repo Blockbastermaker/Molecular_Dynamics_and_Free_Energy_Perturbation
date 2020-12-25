@@ -107,6 +107,33 @@ def dE_Calculation2():
         dEs=dEs.append(dE)
     return dEs
 
+#%%
+def dE_Calculation3():
+    dEs=pd.DataFrame()
+    Energies_df=(pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"State_A_G":State_A_df["Q_sum"] ,"State_B_Lambda":State_B_df["Lambda"],"State_B_G":State_B_df["Q_sum"],"E":State_B_df["Q_sum"] - State_A_df["Q_sum"] })).sort_values('State_A_Lambda')
+
+    State_A_Energies_df=pd.DataFrame(dict(Energies_df.groupby('State_A_Lambda',sort=False)['State_A_G'].apply(list)))
+    State_B_Energies_df=pd.DataFrame(dict(Energies_df.groupby('State_B_Lambda',sort=False)['State_B_G'].apply(list))) 
+
+
+    for i in range(len(State_A_Energies_df.columns)-1):
+        State_A_Energies=State_A_Energies_df.iloc[:,[i,i+1]]
+        State_A_Energies.columns=["0","1"]
+        State_A_Lambda_float=State_A_Energies_df.iloc[:,[i,i+1]].columns
+        
+        State_B_Energies=State_B_Energies_df.iloc[:,[i,i+1]]
+        State_B_Energies.columns=["0","1"]
+        State_B_Lambda_float=State_B_Energies_df.iloc[:,[i,i+1]].columns
+        
+        E0=State_A_Energies*State_A_Lambda_float+State_B_Energies*State_B_Lambda_float
+        E1=State_A_Energies*State_A_Lambda_float[::-1]+State_B_Energies*State_B_Lambda_float[::-1]
+        dE=E1-E0
+        dE.columns=[str(State_A_Lambda_float.values[0])+"_"+str(State_B_Lambda_float.values[0])+"-"+str(State_A_Lambda_float.values[1])+"_"+str(State_B_Lambda_float.values[1]),str(State_A_Lambda_float.values[1])+"_"+str(State_B_Lambda_float.values[1])+"-"+str(State_A_Lambda_float.values[0])+"_"+str(State_B_Lambda_float.values[0])]
+        dEs=pd.concat([dEs,dE],axis=1, sort=False)
+    return dEs
+
+
+
 
 #%%
 def Zwnazig_Estimator(dEs_df):
@@ -156,14 +183,14 @@ def Plot_dG(df):
 
 #%%
 #os.chdir("/Users/nour/New_qfep/") #MAC
-#os.chdir("Z:/jobs/Qfep_NEW/")
+os.chdir("Z:/jobs/Qfep_NEW/test2")
 #os.chdir("G:/PhD/Project/En")
-EnergyFiles_Lst = [filename for filename in glob.glob("FEP3*.en")]  
+EnergyFiles_Lst = [filename for filename in glob.glob("FEP*.en")]  
 State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadBinary(EnergyFiles_Lst)
 State_A_df = createDataFrames(State_A_RawEnergies_Lst)
 State_B_df = createDataFrames(State_B_RawEnergies_Lst)
 #dEs =  dE_Calculation(None)
-dEs =  dE_Calculation2()
+dEs =  dE_Calculation3()
 
 Zwanzig_df, Zwanzig_Final_dG= Zwnazig_Estimator(dEs)
 Plot_dG(Zwanzig_df)
