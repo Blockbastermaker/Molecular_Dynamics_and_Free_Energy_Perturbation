@@ -10,6 +10,7 @@ import re
 import cProfile
 
 from pandas.core.frame import DataFrame
+from pandas.core.indexes.base import Index
 
 #%%
 
@@ -112,9 +113,10 @@ def dE_Calculation3():
     dEs=pd.DataFrame()
     Energies_df=(pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"State_A_G":State_A_df["Q_sum"] ,"State_B_Lambda":State_B_df["Lambda"],"State_B_G":State_B_df["Q_sum"],"E":State_B_df["Q_sum"] - State_A_df["Q_sum"] })).sort_values('State_A_Lambda')
 
-    State_A_Energies_df=pd.DataFrame(dict(Energies_df.groupby('State_A_Lambda',sort=False)['State_A_G'].apply(list)))
-    State_B_Energies_df=pd.DataFrame(dict(Energies_df.groupby('State_B_Lambda',sort=False)['State_B_G'].apply(list))) 
-
+    State_A_Energies_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('State_A_Lambda',sort=False)['State_A_G'].apply(list)),orient='index')
+    State_A_Energies_df=State_A_Energies_df.transpose()
+    State_B_Energies_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('State_B_Lambda',sort=False)['State_B_G'].apply(list)),orient="index") 
+    State_B_Energies_df=State_B_Energies_df.transpose()
 
     for i in range(len(State_A_Energies_df.columns)-1):
         State_A_Energies=State_A_Energies_df.iloc[:,[i,i+1]]
@@ -185,7 +187,7 @@ def Plot_dG(df):
 #os.chdir("/Users/nour/New_qfep/") #MAC
 os.chdir("Z:/jobs/Qfep_NEW/test2")
 #os.chdir("G:/PhD/Project/En")
-EnergyFiles_Lst = [filename for filename in glob.glob("FEP*.en")]  
+EnergyFiles_Lst = [filename for filename in glob.glob("*/FEP*.en")]  
 State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadBinary(EnergyFiles_Lst)
 State_A_df = createDataFrames(State_A_RawEnergies_Lst)
 State_B_df = createDataFrames(State_B_RawEnergies_Lst)
