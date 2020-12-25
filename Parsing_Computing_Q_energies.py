@@ -138,8 +138,8 @@ def dE_Calculation3():
 
 
 #%%
-def Zwnazig_Estimator(dEs_df):
-    dEs_df=pd.DataFrame(-0.592*np.log(np.mean(np.exp(-dEs/0.592))))
+def Zwnazig_Estimator(dEs_df,steps):
+    dEs_df=pd.DataFrame(-0.592*np.log(np.mean(np.exp(-dEs.iloc[:steps]/0.592))))
     Lambdas=[]
     dGF=[]
     dGF_sum=[]
@@ -170,7 +170,20 @@ def Zwnazig_Estimator(dEs_df):
     return Zwanzig_df, Zwanzig_Final_dG
 
 
+def Convergence(df,Estimator,StepsChunk_Int,ReplicatiesCount_Int):
+    StepsChunk_Int-=1 # the last step is not included in the reading
+    Zwanzig_Final_Lst=[Estimator(df,steps_limit)[1] for steps_limit in range(StepsChunk_Int*ReplicatiesCount_Int,len(df)+1,StepsChunk_Int*ReplicatiesCount_Int)]
+    StepsChunk_Lst=[steps_limit/ReplicatiesCount_Int for steps_limit in range(StepsChunk_Int*ReplicatiesCount_Int,len(df)+1,StepsChunk_Int*ReplicatiesCount_Int)]
+    Convergence_df=pd.DataFrame({'Number of Steps':StepsChunk_Lst, 'dG':Zwanzig_Final_Lst })
+    return Convergence_df
 
+def Plot_Convergence(df):
+    plt.plot(df['Number of Steps'],df['dG'])
+    plt.title('Convergence Plot',fontsize=16)
+    plt.xlabel("Number of Steps",fontsize=14)
+    plt.ylabel("ΔG FEP (Kcal/mol)",fontsize=14)
+    plt.savefig('Convergence.png',dpi=200)
+    
 def Plot_dG(df):
     p=plt.plot(df.iloc[:,2],'.',label= "ΔGf")
     p=plt.plot(df.iloc[:,4][::-1],'.',label ="ΔGr")
@@ -187,19 +200,34 @@ def Plot_dG(df):
 #os.chdir("/Users/nour/New_qfep/") #MAC
 os.chdir("Z:/jobs/Qfep_NEW/test2")
 #os.chdir("G:/PhD/Project/En")
-EnergyFiles_Lst = [filename for filename in glob.glob("*/FEP*.en")]  
+EnergyFiles_Lst = [filename for filename in glob.glob("FEP*.en")]  
 State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadBinary(EnergyFiles_Lst)
 State_A_df = createDataFrames(State_A_RawEnergies_Lst)
 State_B_df = createDataFrames(State_B_RawEnergies_Lst)
 #dEs =  dE_Calculation(None)
 dEs =  dE_Calculation3()
+Zwanzig_df, Zwanzig_Final_dG= Zwnazig_Estimator(dEs,None)
+convergenc_df=Convergence(dEs,Zwnazig_Estimator,2,1)
+print(convergenc_df)
+Plot_Convergence(convergenc_df)
+#chunck=1000
+#Zwanzig_Final_list=[Zwnazig_Estimator(dEs,steps)[1] for steps in range(0,len(dEs)+1,chunck)]
+#print(Zwanzig_Final_dG)
+#Plot_dG(Zwanzig_df)
+#%%
+df=dEs
+Estimator=Zwnazig_Estimator
+StepsChunk_Int=2
+ReplicatiesCount_Int=1
 
-Zwanzig_df, Zwanzig_Final_dG= Zwnazig_Estimator(dEs)
-Plot_dG(Zwanzig_df)
+
+[Estimator(df,steps_limit)[1] for steps_limit in range(StepsChunk_Int*ReplicatiesCount_Int,len(df)+1,StepsChunk_Int*ReplicatiesCount_Int)]
+
 # %%
 # from datetime import datetime
 # start_time = datetime.now()
 # dEs =  dE_Calculation(None)
 # end_time = datetime.now()
 # print('Duration: {}'.format(end_time - start_time))
+
 # %%
