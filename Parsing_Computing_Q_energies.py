@@ -53,6 +53,48 @@ def ReadBinary(EnergyFiles_Lst):
         
     return State_A_RawEnergies, State_B_RawEnergies
 
+def ReadBinaryParallel(file):
+        
+        with open(file,'rb') as f: fileContent = f.read()
+
+        Version_Check_Str=str(list(struct.unpack("c" * ((len(fileContent[32:112]))//1),fileContent[32:112]))).replace("b'", "").strip("[],' '").replace("'","").replace(",","").replace(" ","")
+        HeaderSize_int=124
+        EnergyFileLength_int=len(fileContent)
+        NextBinaryChank_int=272
+        BinaryStructre_str=15*"d"+6*"h"+15*"d"+10*"h"
+        EnergySteps_int=int((EnergyFileLength_int-HeaderSize_int+8)/NextBinaryChank_int)-1 ## +8 is between the headr and state A, -1 is to exclude the last step (has diffrent stucture in the end h*6 not h*10)
+        StateUnpackedEnergiesLength_int=15
+        StateA_UnpackedEnergiesStart_int=0
+        StateB_UnpackedEnergiesStart_int=21
+        UnpackedEnergiesNextState_int=46 
+        
+
+        ## Check Q_Energies Version !!!
+
+        if "6." in Version_Check_Str: HeaderSize_int += 4
+        elif not '5.' in Version_Check_Str: 
+            print("Pleaes Check the your Qdyn verion in file: "+file +" ----> format is NOT Supported !!! ")
+            exit()
+            
+  
+        UnpackedEnergies_lst=struct.unpack("="+(BinaryStructre_str* EnergySteps_int),fileContent[HeaderSize_int:-264]) #-264 is to exclude the last step (has diffrent stucture in the end h*6 not h*10)
+        
+        State_A_Lst = [UnpackedEnergies_lst[i:(i + StateUnpackedEnergiesLength_int)] for i in range(StateA_UnpackedEnergiesStart_int, len(UnpackedEnergies_lst), UnpackedEnergiesNextState_int)]
+        State_B_Lst = [UnpackedEnergies_lst[i:(i + StateUnpackedEnergiesLength_int)] for i in range(StateB_UnpackedEnergiesStart_int, len(UnpackedEnergies_lst), UnpackedEnergiesNextState_int)]
+
+        return State_A_Lst, State_B_Lst
+
+def ReadAndCollectBinariesInParallel(EnergyFiles_Lst):
+    State_A_RawEnergies = []
+    State_B_RawEnergies = []
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+            ExtractedBinaries = [executor.submit(ReadBinaryParallel, file) for file in EnergyFiles_Lst]
+            [State_A_RawEnergies.extend(y) for y in [ExtractedBinaries[x].result()[0] for x in range(len(ExtractedBinaries))]]
+            [State_B_RawEnergies.extend(y) for y in [ExtractedBinaries[x].result()[1] for x in range(len(ExtractedBinaries))]]
+
+    return State_A_RawEnergies, State_B_RawEnergies
+
+
 
 def createDataFrames(rawEnergy):
 
@@ -201,7 +243,8 @@ def Plot_dG(df):
 os.chdir("Z:/jobs/Qfep_NEW/test2")
 #os.chdir("G:/PhD/Project/En")
 EnergyFiles_Lst = [filename for filename in glob.glob("FEP*.en")]  
-State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadBinary(EnergyFiles_Lst)
+#State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadBinary(EnergyFiles_Lst)
+State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadAndCollectBinariesInParallel(EnergyFiles_Lst)
 State_A_df = createDataFrames(State_A_RawEnergies_Lst)
 State_B_df = createDataFrames(State_B_RawEnergies_Lst)
 #dEs =  dE_Calculation(None)
@@ -219,52 +262,6 @@ Plot_Convergence(convergenc_df)
         
 #%%
 
-def ReadBinaryParallel(file):#for file in EnergyFiles_Lst:
-        
-        with open(file,'rb') as f: fileContent = f.read()
-
-        Version_Check_Str=str(list(struct.unpack("c" * ((len(fileContent[32:112]))//1),fileContent[32:112]))).replace("b'", "").strip("[],' '").replace("'","").replace(",","").replace(" ","")
-        HeaderSize_int=124
-        EnergyFileLength_int=len(fileContent)
-        NextBinaryChank_int=272
-        BinaryStructre_str=15*"d"+6*"h"+15*"d"+10*"h"
-        EnergySteps_int=int((EnergyFileLength_int-HeaderSize_int+8)/NextBinaryChank_int)-1 ## +8 is between the headr and state A, -1 is to exclude the last step (has diffrent stucture in the end h*6 not h*10)
-        StateUnpackedEnergiesLength_int=15
-        StateA_UnpackedEnergiesStart_int=0
-        StateB_UnpackedEnergiesStart_int=21
-        UnpackedEnergiesNextState_int=46 
-        
-
-        ## Check Q_Energies Version !!!
-
-        if "6." in Version_Check_Str: HeaderSize_int += 4
-        elif not '5.' in Version_Check_Str: 
-            print("Pleaes Check the your Qdyn verion in file: "+file +" ----> format is NOT Supported !!! ")
-            exit()
-            
-  
-        UnpackedEnergies_lst=struct.unpack("="+(BinaryStructre_str* EnergySteps_int),fileContent[HeaderSize_int:-264]) #-264 is to exclude the last step (has diffrent stucture in the end h*6 not h*10)
-        
-        State_A_Lst = [UnpackedEnergies_lst[i:(i + StateUnpackedEnergiesLength_int)] for i in range(StateA_UnpackedEnergiesStart_int, len(UnpackedEnergies_lst), UnpackedEnergiesNextState_int)]
-        State_B_Lst = [UnpackedEnergies_lst[i:(i + StateUnpackedEnergiesLength_int)] for i in range(StateB_UnpackedEnergiesStart_int, len(UnpackedEnergies_lst), UnpackedEnergiesNextState_int)]
-
-        return State_A_Lst, State_B_Lst
-
-def CollectBinray(State_A_Lst,State_B_Lst):
-    State_A_RawEnergies = []
-    State_B_RawEnergies = []
-    for step in State_A_Lst :State_A_RawEnergies.append(step)
-    for step in State_B_Lst :State_B_RawEnergies.append(step)
-        
-    return State_A_RawEnergies, State_B_RawEnergies
-
-
-
-#%%
-#runArgumentsLst = [[folder, bossDirLocal, qDirLocal, namdDirLocal, gmxDirLocal, toleranceE, toleranceDG, args] for folder in args.folders]
-with concurrent.futures.ThreadPoolExecutor() as executor:
-        results = [executor.submit(ReadBinaryParallel, file) for file in EnergyFiles_Lst]
-        results[0].result()
 
 # %%
 # from datetime import datetime
@@ -273,44 +270,3 @@ with concurrent.futures.ThreadPoolExecutor() as executor:
 # end_time = datetime.now()
 # print('Duration: {}'.format(end_time - start_time))
 
-# %%
-
-[ReadBinaryParallel (file) for file in EnergyFiles_Lst]
-# %%
-import concurrent.futures
-import math
-
-PRIMES = [
-    112272535095293,
-    112582705942171,
-    112272535095293,
-    115280095190773,
-    115797848077099,
-    1099726899285419]
-
-def is_prime(n):
-    if n < 2:
-        return False
-    if n == 2:
-        return True
-    if n % 2 == 0:
-        return False
-
-    sqrt_n = int(math.floor(math.sqrt(n)))
-    for i in range(3, sqrt_n + 1, 2):
-        if n % i == 0:
-            return False
-    return True
-
-def main():
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        for number, prime in zip(PRIMES, executor.map(is_prime, PRIMES)):
-            print('%d is prime: %s' % (number, prime))
-
-if __name__ == '__main__':
-    main()
-# %%
-with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-    future = executor.submit(pow, 323, 1235)
-    print(future.result())
-# %%
