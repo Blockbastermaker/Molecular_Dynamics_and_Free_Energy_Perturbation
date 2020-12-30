@@ -8,7 +8,7 @@ from numpy.core.fromnumeric import transpose
 import pandas as pd
 import re
 import cProfile
-
+import concurrent.futures
 from pandas.core.frame import DataFrame
 from pandas.core.indexes.base import Index
 
@@ -215,13 +215,56 @@ Plot_Convergence(convergenc_df)
 #print(Zwanzig_Final_dG)
 #Plot_dG(Zwanzig_df)
 #%%
-df=dEs
-Estimator=Zwnazig_Estimator
-StepsChunk_Int=2
-ReplicatiesCount_Int=1
+
+        
+#%%
+
+def ReadBinaryParallel(file):#for file in EnergyFiles_Lst:
+        
+        with open(file,'rb') as f: fileContent = f.read()
+
+        Version_Check_Str=str(list(struct.unpack("c" * ((len(fileContent[32:112]))//1),fileContent[32:112]))).replace("b'", "").strip("[],' '").replace("'","").replace(",","").replace(" ","")
+        HeaderSize_int=124
+        EnergyFileLength_int=len(fileContent)
+        NextBinaryChank_int=272
+        BinaryStructre_str=15*"d"+6*"h"+15*"d"+10*"h"
+        EnergySteps_int=int((EnergyFileLength_int-HeaderSize_int+8)/NextBinaryChank_int)-1 ## +8 is between the headr and state A, -1 is to exclude the last step (has diffrent stucture in the end h*6 not h*10)
+        StateUnpackedEnergiesLength_int=15
+        StateA_UnpackedEnergiesStart_int=0
+        StateB_UnpackedEnergiesStart_int=21
+        UnpackedEnergiesNextState_int=46 
+        
+
+        ## Check Q_Energies Version !!!
+
+        if "6." in Version_Check_Str: HeaderSize_int += 4
+        elif not '5.' in Version_Check_Str: 
+            print("Pleaes Check the your Qdyn verion in file: "+file +" ----> format is NOT Supported !!! ")
+            exit()
+            
+  
+        UnpackedEnergies_lst=struct.unpack("="+(BinaryStructre_str* EnergySteps_int),fileContent[HeaderSize_int:-264]) #-264 is to exclude the last step (has diffrent stucture in the end h*6 not h*10)
+        
+        State_A_Lst = [UnpackedEnergies_lst[i:(i + StateUnpackedEnergiesLength_int)] for i in range(StateA_UnpackedEnergiesStart_int, len(UnpackedEnergies_lst), UnpackedEnergiesNextState_int)]
+        State_B_Lst = [UnpackedEnergies_lst[i:(i + StateUnpackedEnergiesLength_int)] for i in range(StateB_UnpackedEnergiesStart_int, len(UnpackedEnergies_lst), UnpackedEnergiesNextState_int)]
+
+        return State_A_Lst, State_B_Lst
+
+def CollectBinray(State_A_Lst,State_B_Lst):
+    State_A_RawEnergies = []
+    State_B_RawEnergies = []
+    for step in State_A_Lst :State_A_RawEnergies.append(step)
+    for step in State_B_Lst :State_B_RawEnergies.append(step)
+        
+    return State_A_RawEnergies, State_B_RawEnergies
 
 
-[Estimator(df,steps_limit)[1] for steps_limit in range(StepsChunk_Int*ReplicatiesCount_Int,len(df)+1,StepsChunk_Int*ReplicatiesCount_Int)]
+
+#%%
+#runArgumentsLst = [[folder, bossDirLocal, qDirLocal, namdDirLocal, gmxDirLocal, toleranceE, toleranceDG, args] for folder in args.folders]
+with concurrent.futures.ThreadPoolExecutor() as executor:
+        results = [executor.submit(ReadBinaryParallel, file) for file in EnergyFiles_Lst]
+        results[0].result()
 
 # %%
 # from datetime import datetime
@@ -230,4 +273,44 @@ ReplicatiesCount_Int=1
 # end_time = datetime.now()
 # print('Duration: {}'.format(end_time - start_time))
 
+# %%
+
+[ReadBinaryParallel (file) for file in EnergyFiles_Lst]
+# %%
+import concurrent.futures
+import math
+
+PRIMES = [
+    112272535095293,
+    112582705942171,
+    112272535095293,
+    115280095190773,
+    115797848077099,
+    1099726899285419]
+
+def is_prime(n):
+    if n < 2:
+        return False
+    if n == 2:
+        return True
+    if n % 2 == 0:
+        return False
+
+    sqrt_n = int(math.floor(math.sqrt(n)))
+    for i in range(3, sqrt_n + 1, 2):
+        if n % i == 0:
+            return False
+    return True
+
+def main():
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        for number, prime in zip(PRIMES, executor.map(is_prime, PRIMES)):
+            print('%d is prime: %s' % (number, prime))
+
+if __name__ == '__main__':
+    main()
+# %%
+with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+    future = executor.submit(pow, 323, 1235)
+    print(future.result())
 # %%
