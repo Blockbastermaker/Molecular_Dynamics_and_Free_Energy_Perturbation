@@ -149,7 +149,6 @@ def dE_Calculation2():
         dE=pd.DataFrame(E1-E0,columns=[str(State_A_Lambda_float.values[0])+"_"+str(State_B_Lambda_float.values[0])+"-"+str(State_A_Lambda_float.values[1])+"_"+str(State_B_Lambda_float.values[1]),str(State_A_Lambda_float.values[1])+"_"+str(State_B_Lambda_float.values[1])+"-"+str(State_A_Lambda_float.values[0])+"_"+str(State_B_Lambda_float.values[0])])
         dEs=dEs.append(dE)
     return dEs
-
 #%%
 def dE_Calculation3():
     dEs=pd.DataFrame()
@@ -176,9 +175,47 @@ def dE_Calculation3():
         dEs=pd.concat([dEs,dE],axis=1, sort=False)
     return dEs
 
+#%%
+def dE_ParallelCalculationPrepare():
+    Energies_df=(pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"State_A_G":State_A_df["Q_sum"] ,"State_B_Lambda":State_B_df["Lambda"],"State_B_G":State_B_df["Q_sum"],"E":State_B_df["Q_sum"] - State_A_df["Q_sum"] })).sort_values('State_A_Lambda')
 
+    State_A_Energies_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('State_A_Lambda',sort=False)['State_A_G'].apply(list)),orient='index')
+    State_A_Energies_df=State_A_Energies_df.transpose()
+    State_B_Energies_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('State_B_Lambda',sort=False)['State_B_G'].apply(list)),orient="index") 
+    State_B_Energies_df=State_B_Energies_df.transpose()
+    return State_A_Energies_df,State_B_Energies_df
 
+def dE_ParallelCalculation(State_A_Energies_df,State_B_Energies_df,LambdaState_Int):
+    State_A_Energies=State_A_Energies_df.iloc[:,[LambdaState_Int,LambdaState_Int+1]]
+    State_A_Energies.columns=["0","1"]
+    State_A_Lambda_float=State_A_Energies_df.iloc[:,[LambdaState_Int,LambdaState_Int+1]].columns
+    
+    State_B_Energies=State_B_Energies_df.iloc[:,[LambdaState_Int,LambdaState_Int+1]]
+    State_B_Energies.columns=["0","1"]
+    State_B_Lambda_float=State_B_Energies_df.iloc[:,[LambdaState_Int,LambdaState_Int+1]].columns
+    
+    E0=State_A_Energies*State_A_Lambda_float+State_B_Energies*State_B_Lambda_float
+    E1=State_A_Energies*State_A_Lambda_float[::-1]+State_B_Energies*State_B_Lambda_float[::-1]
+    dE=E1-E0
+    dE.columns=[str(State_A_Lambda_float.values[0])+"_"+str(State_B_Lambda_float.values[0])+"-"+str(State_A_Lambda_float.values[1])+"_"+str(State_B_Lambda_float.values[1]),str(State_A_Lambda_float.values[1])+"_"+str(State_B_Lambda_float.values[1])+"-"+str(State_A_Lambda_float.values[0])+"_"+str(State_B_Lambda_float.values[0])]
+    return dE
 
+def Run_dE_ParallelCalculation(State_A_Energies_df,State_B_Energies_df):
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        dEs=pd.DataFrame()
+        ###dE=[pd.concat([dEs,dE.result()],axis=1, sort=False) for dE in [executor.submit(dE_ParallelCalculation,State_A_Energies_df,State_B_Energies_df,i) for i in range(len(State_A_Energies_df.columns)-1)]]
+        dE=[(dE.result()) for dE in [executor.submit(dE_ParallelCalculation,State_A_Energies_df,State_B_Energies_df,LambdaState_Int) for LambdaState_Int in range(len(State_A_Energies_df.columns)-1)]]
+        for i in dE:dEs=pd.concat([dEs,i],axis=1, sort=False)
+    return (dEs)
+
+def Run_dE_ParallelCalculation2(State_A_Energies_df,State_B_Energies_df):
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        dEs=pd.DataFrame()
+        #dE=[(dE.result()) for dE in [executor.submit(dE_ParallelCalculation,State_A_Energies_df,State_B_Energies_df,LambdaState_Int) for LambdaState_Int in range(len(State_A_Energies_df.columns)-1)]]
+        dE1=[executor.submit(dE_ParallelCalculation,State_A_Energies_df,State_B_Energies_df,LambdaState_Int) for LambdaState_Int in range(len(State_A_Energies_df.columns)-1)]
+        dE=[(dE.result()) for dE in dE1]
+        for i in dE:dEs=pd.concat([dEs,i],axis=1, sort=False)
+    return (dEs)
 #%%
 def Zwnazig_Estimator(dEs_df,steps):
     dEs_df=pd.DataFrame(-0.592*np.log(np.mean(np.exp(-dEs.iloc[:steps]/0.592))))
@@ -247,21 +284,18 @@ EnergyFiles_Lst = [filename for filename in glob.glob("FEP*.en")]
 State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadAndCollectBinariesInParallel(EnergyFiles_Lst)
 State_A_df = createDataFrames(State_A_RawEnergies_Lst)
 State_B_df = createDataFrames(State_B_RawEnergies_Lst)
+State_A_Energies_df,State_B_Energies_df=dE_ParallelCalculationPrepare()
 #dEs =  dE_Calculation(None)
-dEs =  dE_Calculation3()
+dEs =  Run_dE_ParallelCalculation(State_A_Energies_df,State_B_Energies_df)
 Zwanzig_df, Zwanzig_Final_dG= Zwnazig_Estimator(dEs,None)
 convergenc_df=Convergence(dEs,Zwnazig_Estimator,2,1)
 print(convergenc_df)
 Plot_Convergence(convergenc_df)
 #chunck=1000
 #Zwanzig_Final_list=[Zwnazig_Estimator(dEs,steps)[1] for steps in range(0,len(dEs)+1,chunck)]
-#print(Zwanzig_Final_dG)
+print(Zwanzig_Final_dG)
 #Plot_dG(Zwanzig_df)
 #%%
-
-        
-#%%
-
 
 # %%
 # from datetime import datetime
