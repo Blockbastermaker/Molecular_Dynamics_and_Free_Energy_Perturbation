@@ -7,10 +7,8 @@ import matplotlib.pyplot as plt
 from numpy.core.fromnumeric import transpose
 import pandas as pd
 import re
-import cProfile
 import concurrent.futures
-from pandas.core.frame import DataFrame
-from pandas.core.indexes.base import Index
+import argparse
 
 #%%
 
@@ -217,7 +215,7 @@ def Run_dE_ParallelCalculation2(State_A_Energies_df,State_B_Energies_df):
         for i in dE:dEs=pd.concat([dEs,i],axis=1, sort=False)
     return (dEs)
 #%%
-def Zwnazig_Estimator(dEs_df,steps):
+def Zwanazig_Estimator(dEs_df,steps):
     dEs_df=pd.DataFrame(-0.592*np.log(np.mean(np.exp(-dEs.iloc[:steps]/0.592))))
     Lambdas=[]
     dGF=[]
@@ -263,7 +261,7 @@ def Plot_Convergence(df):
     plt.ylabel("ΔG FEP (Kcal/mol)",fontsize=14)
     plt.savefig('Convergence.png',dpi=200)
     
-def Plot_dG(df):
+def Plot_Hysteresis(df):
     p=plt.plot(df.iloc[:,2],'.',label= "ΔGf")
     p=plt.plot(df.iloc[:,4][::-1],'.',label ="ΔGr")
     plt.title('Hysteresis between ΔGf and ΔGr',fontsize=16)
@@ -279,7 +277,7 @@ def Plot_dG(df):
 #os.chdir("/Users/nour/New_qfep/") #MAC
 os.chdir("Z:/jobs/Qfep_NEW/test2")
 #os.chdir("G:/PhD/Project/En")
-EnergyFiles_Lst = [filename for filename in glob.glob("FEP*.en")]  
+EnergyFiles_Lst = [filename for filename in glob.glob("*/FEP*.en")]  
 #State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadBinary(EnergyFiles_Lst)
 State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadAndCollectBinariesInParallel(EnergyFiles_Lst)
 State_A_df = createDataFrames(State_A_RawEnergies_Lst)
@@ -287,15 +285,70 @@ State_B_df = createDataFrames(State_B_RawEnergies_Lst)
 State_A_Energies_df,State_B_Energies_df=dE_ParallelCalculationPrepare()
 #dEs =  dE_Calculation(None)
 dEs =  Run_dE_ParallelCalculation(State_A_Energies_df,State_B_Energies_df)
-Zwanzig_df, Zwanzig_Final_dG= Zwnazig_Estimator(dEs,None)
-convergenc_df=Convergence(dEs,Zwnazig_Estimator,2,1)
+Zwanzig_df, Zwanzig_Final_dG= Convergence(Zwanazig_Estimator,2,1)
 print(convergenc_df)
+Zwanazig_Estimator(dEs,None)
+convergenc_df=Convergence(dEs,Z)
 Plot_Convergence(convergenc_df)
 #chunck=1000
 #Zwanzig_Final_list=[Zwnazig_Estimator(dEs,steps)[1] for steps in range(0,len(dEs)+1,chunck)]
 print(Zwanzig_Final_dG)
-#Plot_dG(Zwanzig_df)
+#Plot_Hysteresis(Zwanzig_df)
+
+
 #%%
+parser = argparse.ArgumentParser(description="MD/FEP Analysis")
+
+parser.add_argument("-f","--energy_files_prefix", help = "Energy Files Prefix, ex: FEP1, FEP2")
+
+parser.add_argument("-a","--all_replicaties",default = False, action="store_true", help = "Analyze all replicaties in the current directory")
+
+parser.add_argument("-p","--run_in_parallel", help = "Run in parallel")
+
+parser.add_argument("-e","--estimator",nargs='+', default='Zwanazig_Estimator',help = "Energy Estimator")
+
+parser.add_argument("-c","--convergence_analysis",nargs='+', help = "Convergence Analysis: Estimator, by Number of Steps(fs), Number of used Replicaties")
+
+parser.add_argument("-t","--plot", default = False, action="store_true", help = "Plot and Save")
+
+
+args = parser.parse_args()
+if __name__ == "__main__":
+    if args.all_replicaties==True:
+        EnergyFiles_Lst = [filename for filename in glob.glob('*/'+args.energy_files_prefix+'*.en')]
+    else:
+        EnergyFiles_Lst = [filename for filename in glob.glob(args.energy_files_prefix+'*.en')]
+    
+    if args.run_in_parallel==True:
+        State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadAndCollectBinariesInParallel(EnergyFiles_Lst)
+        State_A_df = createDataFrames(State_A_RawEnergies_Lst)
+        State_B_df = createDataFrames(State_B_RawEnergies_Lst)
+        State_A_Energies_df,State_B_Energies_df=dE_ParallelCalculationPrepare()
+        dEs =  Run_dE_ParallelCalculation(State_A_Energies_df,State_B_Energies_df)
+
+    else:
+        State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadBinary(EnergyFiles_Lst)
+        State_A_df = createDataFrames(State_A_RawEnergies_Lst)
+        State_B_df = createDataFrames(State_B_RawEnergies_Lst)
+        dEs =  dE_Calculation3()
+
+    if args.estimator =='Zwanazig_Estimator':
+        Zwanzig_df, Zwanzig_Final_dG= Zwanazig_Estimator(dEs,None)
+        print(Zwanzig_Final_dG)
+        
+    if args.convergence_analysis is not None:
+        args.convergence_analysis=args.convergence_analysis[0].split(',')
+        convergenc_df=Convergence(dEs,eval(args.convergence_analysis[0]),int(args.convergence_analysis[1]),int(args.convergence_analysis[2]))
+        print(convergenc_df)
+        Plot_Convergence(convergenc_df)
+
+    if args.plot ==True:
+        Plot_Hysteresis(Zwanzig_df)
+
+else: 
+    print("please use"+ " "+ "'test9.py -h'"+" ""for usege ")  
+
+
 
 # %%
 # from datetime import datetime
@@ -304,3 +357,8 @@ print(Zwanzig_Final_dG)
 # end_time = datetime.now()
 # print('Duration: {}'.format(end_time - start_time))
 
+x=[i.split('\\')[1] for i in EnergyFiles_Lst]
+x.count([i.split('\\')[1] for i in EnergyFiles_Lst][0])
+
+
+# %%
