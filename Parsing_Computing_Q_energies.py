@@ -259,7 +259,7 @@ def Plot_Convergence(df):
     plt.title('Convergence Plot',fontsize=16)
     plt.xlabel("Number of Steps",fontsize=14)
     plt.ylabel("ΔG FEP (Kcal/mol)",fontsize=14)
-    plt.savefig('Convergence.png',dpi=200)
+    plt.savefig('Convergence.png',dpi=300)
     
 def Plot_Hysteresis(df):
     p=plt.plot(df.iloc[:,2],'.',label= "ΔGf")
@@ -268,33 +268,45 @@ def Plot_Hysteresis(df):
     plt.xlabel("λ",fontsize=14)
     plt.ylabel("ΔG FEP (Kcal/mol)",fontsize=14)
     plt.legend()
-    plt.savefig('Hysteresis.png',dpi=200)
+    plt.savefig('Hysteresis.png',dpi=300)
+    
+def Plot_dG_by_Lambda(df):
+    p=plt.plot(df.iloc[:,0],df.iloc[:,1],'.',label= "ΔGf")
+    p=plt.plot(df.iloc[:,0],df.iloc[:,3][::-1],'.',label ="ΔGr")
+    plt.title('dG_vs_Lambda',fontsize=16)
+    plt.xlabel("λ",fontsize=14)
+    plt.tick_params(axis='x', which='major', labelsize=7)
+    plt.xticks(rotation=60)
+    plt.ylabel("ΔG FEP (Kcal/mol)",fontsize=14)
+    plt.legend()
+    plt.savefig('dG_vs_Lambda.png',dpi=300)
 #%%
 
 #if '__name__' == '__main__':
 
 #%%
 #os.chdir("/Users/nour/New_qfep/") #MAC
-os.chdir("Z:/jobs/Qfep_NEW/test2")
+os.chdir("Z:/jobs/Qfep_NEW/")
 #os.chdir("G:/PhD/Project/En")
-EnergyFiles_Lst = [filename for filename in glob.glob("*/FEP*.en")]  
-#State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadBinary(EnergyFiles_Lst)
-State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadAndCollectBinariesInParallel(EnergyFiles_Lst)
+EnergyFiles_Lst = [filename for filename in glob.glob("FEP2*.en")]  
+State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadBinary(EnergyFiles_Lst)
+#State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadAndCollectBinariesInParallel(EnergyFiles_Lst)
 State_A_df = createDataFrames(State_A_RawEnergies_Lst)
 State_B_df = createDataFrames(State_B_RawEnergies_Lst)
-State_A_Energies_df,State_B_Energies_df=dE_ParallelCalculationPrepare()
-#dEs =  dE_Calculation(None)
+#State_A_Energies_df,State_B_Energies_df=dE_ParallelCalculationPrepare()
+dEs =  dE_Calculation(None)
 dEs =  Run_dE_ParallelCalculation(State_A_Energies_df,State_B_Energies_df)
-Zwanzig_df, Zwanzig_Final_dG= Convergence(Zwanazig_Estimator,2,1)
+Zwanzig_df, Zwanzig_Final_dG= Zwanazig_Estimator(dEs,None)
+
+convergenc_df= Convergence(dEs,Zwanazig_Estimator,1000,1)
 print(convergenc_df)
-Zwanazig_Estimator(dEs,None)
-convergenc_df=Convergence(dEs,Z)
+#convergenc_df=Convergence(dEs,Z)
 Plot_Convergence(convergenc_df)
 #chunck=1000
 #Zwanzig_Final_list=[Zwnazig_Estimator(dEs,steps)[1] for steps in range(0,len(dEs)+1,chunck)]
 print(Zwanzig_Final_dG)
 #Plot_Hysteresis(Zwanzig_df)
-
+Plot_dG_by_Lambda(Zwanzig_df)
 
 #%%
 parser = argparse.ArgumentParser(description="MD/FEP Analysis")
@@ -344,9 +356,9 @@ if __name__ == "__main__":
 
     if args.plot ==True:
         Plot_Hysteresis(Zwanzig_df)
-
+        Plot_dG_by_Lambda(Zwanzig_df)
 else: 
-    print("please use"+ " "+ "'test9.py -h'"+" ""for usege ")  
+    print("please use"+ " "+ "'MD/FEP Analysis.py -h'"+" ""for usege ")  
 
 
 
