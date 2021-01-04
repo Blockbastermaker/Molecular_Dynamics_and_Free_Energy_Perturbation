@@ -260,6 +260,7 @@ def Plot_Convergence(df):
     plt.xlabel("Number of Steps",fontsize=14)
     plt.ylabel("ΔG FEP (Kcal/mol)",fontsize=14)
     plt.savefig('Convergence.png',dpi=300)
+    plt.close()
     
 def Plot_Hysteresis(df):
     p=plt.plot(df.iloc[:,2],'.',label= "ΔGf")
@@ -269,6 +270,7 @@ def Plot_Hysteresis(df):
     plt.ylabel("ΔG FEP (Kcal/mol)",fontsize=14)
     plt.legend()
     plt.savefig('Hysteresis.png',dpi=300)
+    plt.close()
     
 def Plot_dG_by_Lambda(df):
     p=plt.plot(df.iloc[:,0],df.iloc[:,1],'.',label= "ΔGf")
@@ -280,6 +282,8 @@ def Plot_dG_by_Lambda(df):
     plt.ylabel("ΔG FEP (Kcal/mol)",fontsize=14)
     plt.legend()
     plt.savefig('dG_vs_Lambda.png',dpi=300)
+    plt.close()
+
 #%%
 
 #if '__name__' == '__main__':
