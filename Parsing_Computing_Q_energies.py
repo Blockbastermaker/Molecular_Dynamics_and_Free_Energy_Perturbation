@@ -263,8 +263,8 @@ def Plot_Convergence(df):
     plt.close()
     
 def Plot_Hysteresis(df):
-    p=plt.plot(df.iloc[:,2],'.',label= "ΔGf")
-    p=plt.plot(df.iloc[:,4][::-1],'.',label ="ΔGr")
+    p=plt.plot(df.iloc[1:,2],'.',label= "ΔGf")
+    p=plt.plot(df.iloc[:-1,4],'.',label ="ΔGr")
     plt.title('Hysteresis between ΔGf and ΔGr',fontsize=16)
     plt.xlabel("λ",fontsize=14)
     plt.ylabel("ΔG FEP (Kcal/mol)",fontsize=14)
@@ -273,8 +273,8 @@ def Plot_Hysteresis(df):
     plt.close()
     
 def Plot_dG_by_Lambda(df):
-    p=plt.plot(df.iloc[:,0],df.iloc[:,1],'.',label= "ΔGf")
-    p=plt.plot(df.iloc[:,0],df.iloc[:,3][::-1],'.',label ="ΔGr")
+    p=plt.plot(df.iloc[1:,0],df.iloc[1:,1],'.',label= "ΔGf")
+    p=plt.plot(df.iloc[1:,0],df.iloc[:-1,3]*-1.0,'.',label ="ΔGr")
     plt.title('dG_vs_Lambda',fontsize=16)
     plt.xlabel("λ",fontsize=14)
     plt.tick_params(axis='x', which='major', labelsize=7)
@@ -284,6 +284,8 @@ def Plot_dG_by_Lambda(df):
     plt.savefig('dG_vs_Lambda.png',dpi=300)
     plt.close()
 
+
+
 #%%
 
 #if '__name__' == '__main__':
@@ -292,14 +294,14 @@ def Plot_dG_by_Lambda(df):
 #os.chdir("/Users/nour/New_qfep/") #MAC
 os.chdir("Z:/jobs/Qfep_NEW/")
 #os.chdir("G:/PhD/Project/En")
-EnergyFiles_Lst = [filename for filename in glob.glob("FEP2*.en")]  
+EnergyFiles_Lst = [filename for filename in glob.glob("FEP1*.en")]  
 State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadBinary(EnergyFiles_Lst)
 #State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadAndCollectBinariesInParallel(EnergyFiles_Lst)
 State_A_df = createDataFrames(State_A_RawEnergies_Lst)
 State_B_df = createDataFrames(State_B_RawEnergies_Lst)
 #State_A_Energies_df,State_B_Energies_df=dE_ParallelCalculationPrepare()
 dEs =  dE_Calculation(None)
-dEs =  Run_dE_ParallelCalculation(State_A_Energies_df,State_B_Energies_df)
+#dEs =  Run_dE_ParallelCalculation(State_A_Energies_df,State_B_Energies_df)
 Zwanzig_df, Zwanzig_Final_dG= Zwanazig_Estimator(dEs,None)
 
 convergenc_df= Convergence(dEs,Zwanazig_Estimator,1000,1)
@@ -319,7 +321,7 @@ parser.add_argument("-f","--energy_files_prefix", help = "Energy Files Prefix, e
 
 parser.add_argument("-a","--all_replicaties",default = False, action="store_true", help = "Analyze all replicaties in the current directory")
 
-parser.add_argument("-p","--run_in_parallel", help = "Run in parallel")
+parser.add_argument("-p","--run_in_parallel",action="store_true", help = "Run in parallel")
 
 parser.add_argument("-e","--estimator",nargs='+', default='Zwanazig_Estimator',help = "Energy Estimator")
 
