@@ -10,6 +10,8 @@ import re
 import concurrent.futures
 import argparse
 
+from seaborn.utils import despine
+
 #%%
 
 
@@ -247,12 +249,15 @@ def Zwanazig_Estimator(dEs_df,steps):
     return Zwanzig_df, Zwanzig_Final_dG
 
 
-def Convergence(df,Estimator,StepsChunk_Int,ReplicatiesCount_Int):
-    StepsChunk_Int-=1 # the last step is not included in the reading
-    Zwanzig_Final_Lst=[Estimator(df,steps_limit)[1] for steps_limit in range(StepsChunk_Int*ReplicatiesCount_Int,len(df)+1,StepsChunk_Int*ReplicatiesCount_Int)]
-    StepsChunk_Lst=[steps_limit/ReplicatiesCount_Int for steps_limit in range(StepsChunk_Int*ReplicatiesCount_Int,len(df)+1,StepsChunk_Int*ReplicatiesCount_Int)]
+def Convergence(df,Estimator,StepsChunk_Int,ReplicatiesCount_Int,EnergyOutputInterval_Int):
+                                                        # the last and first steps are not included in the reading
+    Zwanzig_Final_Lst=[Estimator(df,steps_limit)[1] for steps_limit in range((StepsChunk_Int-2)*ReplicatiesCount_Int,len(df)+1,StepsChunk_Int*ReplicatiesCount_Int)]
+    StepsChunk_Lst=[EnergyOutputInterval_Int*steps_limit/ReplicatiesCount_Int for steps_limit in range((StepsChunk_Int-2)*ReplicatiesCount_Int,len(df)+1,StepsChunk_Int*ReplicatiesCount_Int)]
     Convergence_df=pd.DataFrame({'Number of Steps':StepsChunk_Lst, 'dG':Zwanzig_Final_Lst })
     return Convergence_df
+
+
+
 
 def Plot_Convergence(df):
     plt.plot(df['Number of Steps'],df['dG'])
@@ -262,16 +267,29 @@ def Plot_Convergence(df):
     plt.savefig('Convergence.png',dpi=300)
     plt.close()
     
+# def Plot_Hysteresis(df):
+#     p=plt.plot(df.iloc[1:,2],'.',label= "ΔGf")
+#     p=plt.plot(df.iloc[:-1,4],'.',label ="ΔGr")
+#     plt.title('Hysteresis between ΔGf and ΔGr',fontsize=16)
+#     plt.xlabel("λ",fontsize=14)
+#     plt.ylabel("ΔG FEP (Kcal/mol)",fontsize=14)
+#     plt.legend()
+#     plt.savefig('Hysteresis.png',dpi=300)
+#     plt.close()
+
 def Plot_Hysteresis(df):
-    p=plt.plot(df.iloc[1:,2],'.',label= "ΔGf")
-    p=plt.plot(df.iloc[:-1,4],'.',label ="ΔGr")
+    p=plt.plot(df.iloc[:,0],df.iloc[:,2],'.',label= "ΔGf")
+    p=plt.plot(df.iloc[:,0],df.iloc[:,4][::-1]*-1.0,'.',label ="ΔGr")
     plt.title('Hysteresis between ΔGf and ΔGr',fontsize=16)
     plt.xlabel("λ",fontsize=14)
+    plt.tick_params(axis='x', which='major', labelsize=7)
+    plt.xticks(rotation=60)
     plt.ylabel("ΔG FEP (Kcal/mol)",fontsize=14)
     plt.legend()
     plt.savefig('Hysteresis.png',dpi=300)
     plt.close()
-    
+
+
 def Plot_dG_by_Lambda(df):
     p=plt.plot(df.iloc[1:,0],df.iloc[1:,1],'.',label= "ΔGf")
     p=plt.plot(df.iloc[1:,0],df.iloc[:-1,3]*-1.0,'.',label ="ΔGr")
@@ -294,7 +312,7 @@ def Plot_dG_by_Lambda(df):
 #os.chdir("/Users/nour/New_qfep/") #MAC
 os.chdir("Z:/jobs/Qfep_NEW/")
 #os.chdir("G:/PhD/Project/En")
-EnergyFiles_Lst = [filename for filename in glob.glob("FEP1*.en")]  
+EnergyFiles_Lst = [filename for filename in glob.glob("FEP2*.en")]  
 State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadBinary(EnergyFiles_Lst)
 #State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadAndCollectBinariesInParallel(EnergyFiles_Lst)
 State_A_df = createDataFrames(State_A_RawEnergies_Lst)
@@ -304,8 +322,13 @@ dEs =  dE_Calculation(None)
 #dEs =  Run_dE_ParallelCalculation(State_A_Energies_df,State_B_Energies_df)
 Zwanzig_df, Zwanzig_Final_dG= Zwanazig_Estimator(dEs,None)
 
-convergenc_df= Convergence(dEs,Zwanazig_Estimator,1000,1)
+convergenc_df= Convergence(dEs,Zwanazig_Estimator,1000,1,10)
 print(convergenc_df)
+
+#fig=dEs.plot(subplots=True,figsize=(10,8),layout=(int(len(dEs.columns)/2), 3),sharex=True,legend=True)
+#fig
+#plt.close("all")
+
 #convergenc_df=Convergence(dEs,Z)
 Plot_Convergence(convergenc_df)
 #chunck=1000
@@ -314,6 +337,16 @@ print(Zwanzig_Final_dG)
 #Plot_Hysteresis(Zwanzig_df)
 Plot_dG_by_Lambda(Zwanzig_df)
 
+#%%
+#ploting dEs
+fig, ax = plt.subplots(int(len(dEs.columns)/2), 2, figsize=(12, 10))
+plt.subplots_adjust(wspace=0.2,hspace = 0.05)
+ax = ax.flatten()
+df = dEs
+for i in range(len(df.columns)):
+    ax[i].plot(df.iloc[:,i].values,label=df.columns[i])
+    ax[i].legend(loc='upper right')
+#fig
 #%%
 parser = argparse.ArgumentParser(description="MD/FEP Analysis")
 
@@ -328,7 +361,6 @@ parser.add_argument("-e","--estimator",nargs='+', default='Zwanazig_Estimator',h
 parser.add_argument("-c","--convergence_analysis",nargs='+', help = "Convergence Analysis: Estimator, by Number of Steps(fs), Number of used Replicaties")
 
 parser.add_argument("-t","--plot", default = False, action="store_true", help = "Plot and Save")
-
 
 args = parser.parse_args()
 if __name__ == "__main__":
@@ -356,7 +388,7 @@ if __name__ == "__main__":
         
     if args.convergence_analysis is not None:
         args.convergence_analysis=args.convergence_analysis[0].split(',')
-        convergenc_df=Convergence(dEs,eval(args.convergence_analysis[0]),int(args.convergence_analysis[1]),int(args.convergence_analysis[2]))
+        convergenc_df=Convergence(dEs,eval(args.convergence_analysis[0]),int(args.convergence_analysis[1]),int(args.convergence_analysis[2]),10)
         print(convergenc_df)
         Plot_Convergence(convergenc_df)
 
