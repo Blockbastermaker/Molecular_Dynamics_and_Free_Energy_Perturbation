@@ -302,17 +302,25 @@ def Plot_dG_by_Lambda(df):
     plt.savefig('dG_vs_Lambda.png',dpi=300)
     plt.close()
 
-
-
+def Plot_dEs(df):
+    plots=df.reset_index().plot(x='index', y=list(df.columns)[:], kind = 'line', legend=True,
+        subplots = True, layout=(int(len(df.columns)/2),2),sharex = True, figsize=(16, 14)).flatten()
+    for plot in range(len(plots)):
+        plots[plot].legend(loc='upper right',prop={'size': 7})
+        plots[plot].set_xlabel('Steps (fs)',fontsize=20)
+        plt.subplots_adjust(wspace=0.2,hspace =0.5)
+    plt.suptitle('ΔEs Plots', fontsize=30) # Add the text/suptitle to figure
+    plt.savefig('dEs.png',dpi=300)
+    plt.close()
 #%%
 
 #if '__name__' == '__main__':
 
 #%%
 #os.chdir("/Users/nour/New_qfep/") #MAC
-os.chdir("Z:/jobs/Qfep_NEW/")
+os.chdir("Z:/jobs/Qfep_NEW")
 #os.chdir("G:/PhD/Project/En")
-EnergyFiles_Lst = [filename for filename in glob.glob("FEP2*.en")]  
+EnergyFiles_Lst = [filename for filename in glob.glob("FEP5*.en")]  
 State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadBinary(EnergyFiles_Lst)
 #State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadAndCollectBinariesInParallel(EnergyFiles_Lst)
 State_A_df = createDataFrames(State_A_RawEnergies_Lst)
@@ -337,16 +345,6 @@ print(Zwanzig_Final_dG)
 #Plot_Hysteresis(Zwanzig_df)
 Plot_dG_by_Lambda(Zwanzig_df)
 
-#%%
-#ploting dEs
-fig, ax = plt.subplots(int(len(dEs.columns)/2), 2, figsize=(12, 10))
-plt.subplots_adjust(wspace=0.2,hspace = 0.05)
-ax = ax.flatten()
-df = dEs
-for i in range(len(df.columns)):
-    ax[i].plot(df.iloc[:,i].values,label=df.columns[i])
-    ax[i].legend(loc='upper right')
-#fig
 #%%
 parser = argparse.ArgumentParser(description="MD/FEP Analysis")
 
@@ -395,6 +393,7 @@ if __name__ == "__main__":
     if args.plot ==True:
         Plot_Hysteresis(Zwanzig_df)
         Plot_dG_by_Lambda(Zwanzig_df)
+        Plot_dEs(dEs)
 else: 
     print("please use"+ " "+ "'MD/FEP Analysis.py -h'"+" ""for usege ")  
 
