@@ -346,15 +346,37 @@ def Plot_PDF():
     plt.savefig('PDF.png',dpi=300)
     #plt.close()
 
+
+def Plot_PDF_Matrix():
+    Energies_df=(pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"State_A_G":State_A_df["Q_sum"] ,"State_B_Lambda":State_B_df["Lambda"],"State_B_G":State_B_df["Q_sum"],"E":State_B_df["Q_sum"] - State_A_df["Q_sum"],"Window":State_A_df["Lambda"].astype(str)+"_"+State_B_df["Lambda"].astype(str)})).sort_values('State_A_Lambda')
+    dU_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('Window',sort=False)['E'].apply(list)),orient='index')
+    df=dU_df.transpose()
+
+    f, axis = plt.subplots(int(len(df.columns)), int(len(df.columns)), figsize=(15, 15))
+    for window1 in range(len(df.columns)):
+        for window2 in range(len(df.columns)):
+            if window1==window2: color1, color2='blue','blue'
+            else: color1 ,color2='gray','orange'
+            sns.distplot(df.iloc[:,window1].values , hist = False, kde = True,color=color1,
+                kde_kws = {'shade': True,'alpha':0.4},label=df.columns[window1], ax=axis[window1,window2])
+            sns.distplot( df.iloc[:,window2].values , hist = False, kde = True,color=color2,
+                kde_kws = {'shade': True,'alpha':0.4},label=df.columns[window2], ax=axis[window1,window2])
+            axis[window1,window2].legend(loc='upper right',prop={'size':4})
+            axis[window1,window2].tick_params(labelsize=5)
+            plt.subplots_adjust(wspace=0.5,hspace = 0.5)
+    [axis[-1,-i].set_xlabel('U (Kcal/mol)',fontsize=5) for i in range(int(len(df.columns))) ]
+    plt.suptitle('Probability Density Function Matrix', fontsize=25)
+    plt.savefig('PDF_Matrix.png',dpi=300)
+    #plt.close()
 #%%
 
 #if '__name__' == '__main__':
 
 #%%
 #os.chdir("/Users/nour/New_qfep/") #MAC
-os.chdir("Z:/jobs/Qfep_NEW")
+os.chdir("Z:/jobs/Qfep_NEW/")
 #os.chdir("G:/PhD/Project/En")
-EnergyFiles_Lst = [filename for filename in glob.glob("FEP5*.en")]  
+EnergyFiles_Lst = [filename for filename in glob.glob("FEP2*.en")]  
 State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadBinary(EnergyFiles_Lst)
 #State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadAndCollectBinariesInParallel(EnergyFiles_Lst)
 State_A_df = createDataFrames(State_A_RawEnergies_Lst)
@@ -372,7 +394,7 @@ Plot_PDF()
 #plt.close("all")
 
 #convergenc_df=Convergence(dEs,Z)
-Plot_Convergence(convergenc_df)
+#Plot_Convergence(convergenc_df)
 #chunck=1000
 #Zwanzig_Final_list=[Zwnazig_Estimator(dEs,steps)[1] for steps in range(0,len(dEs)+1,chunck)]
 print(Zwanzig_Final_dG)
@@ -382,6 +404,27 @@ Plot_dG_by_Lambda(Zwanzig_df)
 
 
 #%%
+def Plot_PDF_Matrix():
+    Energies_df=(pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"State_A_G":State_A_df["Q_sum"] ,"State_B_Lambda":State_B_df["Lambda"],"State_B_G":State_B_df["Q_sum"],"E":State_B_df["Q_sum"] - State_A_df["Q_sum"],"Window":State_A_df["Lambda"].astype(str)+"_"+State_B_df["Lambda"].astype(str)})).sort_values('State_A_Lambda')
+    dU_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('Window',sort=False)['E'].apply(list)),orient='index')
+    df=dU_df.transpose()
+
+    f, axis = plt.subplots(int(len(df.columns)), int(len(df.columns)), figsize=(15, 15))
+    for window1 in range(len(df.columns)):
+        for window2 in range(len(df.columns)):
+            if window1==window2: color1, color2='blue','blue'
+            else: color1 ,color2='gray','orange'
+            sns.distplot(df.iloc[:,window1].values , hist = False, kde = True,color=color1,
+                kde_kws = {'shade': True,'alpha':0.4},label=df.columns[window1], ax=axis[window1,window2])
+            sns.distplot( df.iloc[:,window2].values , hist = False, kde = True,color=color2,
+                kde_kws = {'shade': True,'alpha':0.4},label=df.columns[window2], ax=axis[window1,window2])
+            axis[window1,window2].legend(loc='upper right',prop={'size':4})
+            axis[window1,window2].tick_params(labelsize=5)
+            plt.subplots_adjust(wspace=0.5,hspace = 0.5)
+    [axis[-1,-i].set_xlabel('U (Kcal/mol)',fontsize=5) for i in range(int(len(df.columns))) ]
+    plt.suptitle('Probability Density Function Matrix', fontsize=25)
+    #plt.savefig('PDF_Matrix.png',dpi=300)
+    #plt.close()
 
 #%%
 parser = argparse.ArgumentParser(description="MD/FEP Analysis")
