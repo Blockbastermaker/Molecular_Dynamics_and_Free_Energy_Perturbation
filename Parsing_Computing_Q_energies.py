@@ -321,12 +321,13 @@ def Plot_dEs(df):
     plt.close()
     
     
-def Generate_PDF(axis,window1,color1,window2,color2):
+def Generate_PDF(df,axis,window1,color1,window2,color2):
     sns.distplot(df.iloc[:,window1].values , hist = False, kde = True,color=color1,
                 kde_kws = {'shade': True,'alpha':0.4},label=df.columns[window1], ax=axis[window1])
     sns.distplot( df.iloc[:,window2].values , hist = False, kde = True,color=color2,
                 kde_kws = {'shade': True,'alpha':0.4},label=df.columns[window2], ax=axis[window1])
-    axis[window1].legend(loc='upper right',prop={'size': 8})
+    axis[window1].legend(loc='upper right',prop={'size': 7})
+    plt.subplots_adjust(wspace=0.2,hspace = 0.5)
 
 def Plot_PDF():
 
@@ -334,12 +335,12 @@ def Plot_PDF():
     dU_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('Window',sort=False)['E'].apply(list)),orient='index')
     df=dU_df.transpose()
     f, axis = plt.subplots(int(len(df.columns)/2), 2, figsize=(10, 10))
-    plt.subplots_adjust(wspace=0.2,hspace = 0.2)
+    plt.subplots_adjust(wspace=0.2,hspace = 0.5)
     axis = axis.flatten()
     for i in range(1,len(df.columns[:-1])-1):
-        Generate_PDF(axis,i,'orange',i+1 ,'gray')
-    Generate_PDF(axis,0,'blue',1,'gray')
-    Generate_PDF(axis,-1,'red',-2,'gray')
+        Generate_PDF(df,axis,i,'orange',i+1 ,'gray')
+    Generate_PDF(df,axis,0,'blue',1,'gray')
+    Generate_PDF(df,axis,-1,'red',-2,'gray')
     [axis[i].set_xlabel('U (Kcal/mol)',fontsize=18) for i in [-1,-2] ]
     plt.suptitle('Probability Density Function of U', fontsize=20)
     plt.savefig('PDF.png',dpi=300)
@@ -353,7 +354,7 @@ def Plot_PDF():
 #os.chdir("/Users/nour/New_qfep/") #MAC
 os.chdir("Z:/jobs/Qfep_NEW")
 #os.chdir("G:/PhD/Project/En")
-EnergyFiles_Lst = [filename for filename in glob.glob("FEP3*.en")]  
+EnergyFiles_Lst = [filename for filename in glob.glob("FEP5*.en")]  
 State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadBinary(EnergyFiles_Lst)
 #State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadAndCollectBinariesInParallel(EnergyFiles_Lst)
 State_A_df = createDataFrames(State_A_RawEnergies_Lst)
@@ -363,9 +364,9 @@ dEs =  dE_Calculation(None)
 #dEs =  Run_dE_ParallelCalculation(State_A_Energies_df,State_B_Energies_df)
 Zwanzig_df, Zwanzig_Final_dG= Zwanazig_Estimator(dEs,None)
 
-convergenc_df= Convergence(dEs,Zwanazig_Estimator,1000,1,10)
-print(convergenc_df)
-
+#convergenc_df= Convergence(dEs,Zwanazig_Estimator,1000,1,10)
+#print(convergenc_df)
+Plot_PDF()
 #fig=dEs.plot(subplots=True,figsize=(10,8),layout=(int(len(dEs.columns)/2), 3),sharex=True,legend=True)
 #fig
 #plt.close("all")
