@@ -319,15 +319,41 @@ def Plot_dEs(df):
     plt.suptitle('ΔEs Plots', fontsize=30) # Add the text/suptitle to figure
     plt.savefig('dEs.png',dpi=300)
     plt.close()
+    
+    
+def Generate_PDF(axis,window1,color1,window2,color2):
+    sns.distplot(df.iloc[:,window1].values , hist = False, kde = True,color=color1,
+                kde_kws = {'shade': True,'alpha':0.4},label=df.columns[window1], ax=axis[window1])
+    sns.distplot( df.iloc[:,window2].values , hist = False, kde = True,color=color2,
+                kde_kws = {'shade': True,'alpha':0.4},label=df.columns[window2], ax=axis[window1])
+    axis[window1].legend(loc='upper right',prop={'size': 8})
+
+def Plot_PDF():
+
+    Energies_df=(pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"State_A_G":State_A_df["Q_sum"] ,"State_B_Lambda":State_B_df["Lambda"],"State_B_G":State_B_df["Q_sum"],"E":State_B_df["Q_sum"] - State_A_df["Q_sum"],"Window":State_A_df["Lambda"].astype(str)+"_"+State_B_df["Lambda"].astype(str)})).sort_values('State_A_Lambda')
+    dU_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('Window',sort=False)['E'].apply(list)),orient='index')
+    df=dU_df.transpose()
+    f, axis = plt.subplots(int(len(df.columns)/2), 2, figsize=(10, 10))
+    plt.subplots_adjust(wspace=0.2,hspace = 0.2)
+    axis = axis.flatten()
+    for i in range(1,len(df.columns[:-1])-1):
+        Generate_PDF(axis,i,'orange',i+1 ,'gray')
+    Generate_PDF(axis,0,'blue',1,'gray')
+    Generate_PDF(axis,-1,'red',-2,'gray')
+    [axis[i].set_xlabel('U (Kcal/mol)',fontsize=18) for i in [-1,-2] ]
+    plt.suptitle('Probability Density Function of U', fontsize=20)
+    plt.savefig('PDF.png',dpi=300)
+    #plt.close()
+
 #%%
 
 #if '__name__' == '__main__':
 
 #%%
 #os.chdir("/Users/nour/New_qfep/") #MAC
-os.chdir("Z:/jobs/Qfep_NEW/test2")
+os.chdir("Z:/jobs/Qfep_NEW")
 #os.chdir("G:/PhD/Project/En")
-EnergyFiles_Lst = [filename for filename in glob.glob("FEP1*.en")]  
+EnergyFiles_Lst = [filename for filename in glob.glob("FEP3*.en")]  
 State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadBinary(EnergyFiles_Lst)
 #State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadAndCollectBinariesInParallel(EnergyFiles_Lst)
 State_A_df = createDataFrames(State_A_RawEnergies_Lst)
@@ -352,80 +378,9 @@ print(Zwanzig_Final_dG)
 #Plot_Hysteresis(Zwanzig_df)
 Plot_dG_by_Lambda(Zwanzig_df)
 
-#%%
-def fit_line(df,x):
-    # # best fit of data
-    # x=0
-    # (mu, sigma) = norm.fit(df.iloc[:,x])
-
-    # # the histogram of the data
-    # n, bins, patches = plt.hist(df.iloc[:,x],10, normed=1, facecolor='green', alpha=0.75)
-    # import matplotlib.mlab as mlab
-
-    # # add a 'best fit' line
-    # y = mlab.normpdf( bins, mu, sigma)
-    # #return y
-    # plt.plot( y, 'r--', linewidth=2)
-    
-    x=0
-    (mu, sigma) = norm.fit(df.iloc[:,x].values)
-
-    # the histogram of the data
-    n, bins, patches = plt.hist(df.iloc[:,x].values, 10, normed=1, facecolor='green', alpha=0.75)
-
-    # add a 'best fit' line
-    y = mlab.normpdf( bins, mu, sigma)
-    return y
-    #plt.plot(bins, y, 'r--', linewidth=2)
 
 
 #%%
-Energies_df=(pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"State_A_G":State_A_df["Q_sum"] ,"State_B_Lambda":State_B_df["Lambda"],"State_B_G":State_B_df["Q_sum"],"E":State_B_df["Q_sum"] - State_A_df["Q_sum"],"Window":State_A_df["Lambda"].astype(str)+"_"+State_B_df["Lambda"].astype(str)})).sort_values('State_A_Lambda')
-
-dU_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('Window',sort=False)['E'].apply(list)),orient='index')
-dU_df=dU_df.transpose()
-dU_df
-df=dU_df
-fig, ax = plt.subplots(int(len(df.columns)/2), 2, figsize=(12, 10))
-plt.subplots_adjust(wspace=0.2,hspace = 0.05)
-ax = ax.flatten()
-for i in range(len(df.columns)-1):
-    
-    ax[i].hist(df.iloc[:,i:i+2].values,histtype ='step',density=True,label=df.columns[i]+"-"+df.columns[i+1])
-    ax[i].legend(loc='upper right')
-
-i=0
-y1=fit_line(df,0)
-y2=fit_line(df,1)
-n1, bins1, patches1=ax[i].hist(df.iloc[:,i].values,10,histtype ='step',density=True)
-p=plt.plot(bins1, y1, 'r--', linewidth=2)
-n2, bins2, patches2=ax[i].hist(df.iloc[:,i+1].values,10,histtype ='step',density=True)
-p=plt.plot(bins2, y2, 'b--', linewidth=2)
-p=plt.hist(df.iloc[:,i:i+2].values,histtype ='step',density=True,label=df.columns[i]+"-"+df.columns[i+1])
-plt.show
-# best fit of data
-(mu, sigma) = norm.fit(df.iloc[:,0].values)
-
-# the histogram of the data
-n, bins, patches = plt.hist(df.iloc[:,0].values, 10, normed=1, facecolor='green', alpha=0.75)
-
-# add a 'best fit' line
-y = mlab.normpdf( bins, mu, sigma)
-l = plt.plot(bins, y1, 'r--', linewidth=2)
-
-#plot
-plt.xlabel('Smarts')
-plt.ylabel('Probability')
-plt.title(r'$\mathrm{Histogram\ of\ IQ:}\ \mu=%.3f,\ \sigma=%.3f$' %(mu, sigma))
-plt.grid(True)
-
-plt.show()
-
-
-
-
-
-
 
 #%%
 parser = argparse.ArgumentParser(description="MD/FEP Analysis")
@@ -476,6 +431,7 @@ if __name__ == "__main__":
         Plot_Hysteresis(Zwanzig_df)
         Plot_dG_by_Lambda(Zwanzig_df)
         Plot_dEs(dEs)
+        Plot_PDF()
 else: 
     print("please use"+ " "+ "'MD/FEP Analysis.py -h'"+" ""for usege ")  
 
