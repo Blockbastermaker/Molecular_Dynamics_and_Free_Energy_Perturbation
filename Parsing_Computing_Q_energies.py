@@ -9,7 +9,8 @@ import pandas as pd
 import re
 import concurrent.futures
 import argparse
-
+import seaborn as sns
+from scipy.stats import norm
 from seaborn.utils import despine
 
 #%%
@@ -250,13 +251,19 @@ def Zwanazig_Estimator(dEs_df,steps):
 
 
 def Convergence(df,Estimator,StepsChunk_Int,ReplicatiesCount_Int,EnergyOutputInterval_Int):
-                                                        # the last and first steps are not included in the reading
+                                    # the last and first steps are not included in the reading
     Zwanzig_Final_Lst=[Estimator(df,steps_limit)[1] for steps_limit in range((StepsChunk_Int-2)*ReplicatiesCount_Int,len(df)+1,StepsChunk_Int*ReplicatiesCount_Int)]
     StepsChunk_Lst=[EnergyOutputInterval_Int*steps_limit/ReplicatiesCount_Int for steps_limit in range((StepsChunk_Int-2)*ReplicatiesCount_Int,len(df)+1,StepsChunk_Int*ReplicatiesCount_Int)]
     Convergence_df=pd.DataFrame({'Number of Steps':StepsChunk_Lst, 'dG':Zwanzig_Final_Lst })
     return Convergence_df
 
 
+def dU_Plot():
+    dEs=pd.DataFrame()
+    Energies_df=(pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"State_A_G":State_A_df["Q_sum"] ,"State_B_Lambda":State_B_df["Lambda"],"State_B_G":State_B_df["Q_sum"],"E":State_B_df["Q_sum"] - State_A_df["Q_sum"] })).sort_values('State_A_Lambda')
+
+    State_A_Energies_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('State_A_Lambda',sort=False)['State_A_G'].apply(list)),orient='index')
+    State_A_Energies_df=State_A_Energies_df.transpose()
 
 
 def Plot_Convergence(df):
@@ -318,9 +325,9 @@ def Plot_dEs(df):
 
 #%%
 #os.chdir("/Users/nour/New_qfep/") #MAC
-os.chdir("Z:/jobs/Qfep_NEW")
+os.chdir("Z:/jobs/Qfep_NEW/test2")
 #os.chdir("G:/PhD/Project/En")
-EnergyFiles_Lst = [filename for filename in glob.glob("FEP5*.en")]  
+EnergyFiles_Lst = [filename for filename in glob.glob("FEP1*.en")]  
 State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadBinary(EnergyFiles_Lst)
 #State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadAndCollectBinariesInParallel(EnergyFiles_Lst)
 State_A_df = createDataFrames(State_A_RawEnergies_Lst)
@@ -344,6 +351,81 @@ Plot_Convergence(convergenc_df)
 print(Zwanzig_Final_dG)
 #Plot_Hysteresis(Zwanzig_df)
 Plot_dG_by_Lambda(Zwanzig_df)
+
+#%%
+def fit_line(df,x):
+    # # best fit of data
+    # x=0
+    # (mu, sigma) = norm.fit(df.iloc[:,x])
+
+    # # the histogram of the data
+    # n, bins, patches = plt.hist(df.iloc[:,x],10, normed=1, facecolor='green', alpha=0.75)
+    # import matplotlib.mlab as mlab
+
+    # # add a 'best fit' line
+    # y = mlab.normpdf( bins, mu, sigma)
+    # #return y
+    # plt.plot( y, 'r--', linewidth=2)
+    
+    x=0
+    (mu, sigma) = norm.fit(df.iloc[:,x].values)
+
+    # the histogram of the data
+    n, bins, patches = plt.hist(df.iloc[:,x].values, 10, normed=1, facecolor='green', alpha=0.75)
+
+    # add a 'best fit' line
+    y = mlab.normpdf( bins, mu, sigma)
+    return y
+    #plt.plot(bins, y, 'r--', linewidth=2)
+
+
+#%%
+Energies_df=(pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"State_A_G":State_A_df["Q_sum"] ,"State_B_Lambda":State_B_df["Lambda"],"State_B_G":State_B_df["Q_sum"],"E":State_B_df["Q_sum"] - State_A_df["Q_sum"],"Window":State_A_df["Lambda"].astype(str)+"_"+State_B_df["Lambda"].astype(str)})).sort_values('State_A_Lambda')
+
+dU_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('Window',sort=False)['E'].apply(list)),orient='index')
+dU_df=dU_df.transpose()
+dU_df
+df=dU_df
+fig, ax = plt.subplots(int(len(df.columns)/2), 2, figsize=(12, 10))
+plt.subplots_adjust(wspace=0.2,hspace = 0.05)
+ax = ax.flatten()
+for i in range(len(df.columns)-1):
+    
+    ax[i].hist(df.iloc[:,i:i+2].values,histtype ='step',density=True,label=df.columns[i]+"-"+df.columns[i+1])
+    ax[i].legend(loc='upper right')
+
+i=0
+y1=fit_line(df,0)
+y2=fit_line(df,1)
+n1, bins1, patches1=ax[i].hist(df.iloc[:,i].values,10,histtype ='step',density=True)
+p=plt.plot(bins1, y1, 'r--', linewidth=2)
+n2, bins2, patches2=ax[i].hist(df.iloc[:,i+1].values,10,histtype ='step',density=True)
+p=plt.plot(bins2, y2, 'b--', linewidth=2)
+p=plt.hist(df.iloc[:,i:i+2].values,histtype ='step',density=True,label=df.columns[i]+"-"+df.columns[i+1])
+plt.show
+# best fit of data
+(mu, sigma) = norm.fit(df.iloc[:,0].values)
+
+# the histogram of the data
+n, bins, patches = plt.hist(df.iloc[:,0].values, 10, normed=1, facecolor='green', alpha=0.75)
+
+# add a 'best fit' line
+y = mlab.normpdf( bins, mu, sigma)
+l = plt.plot(bins, y1, 'r--', linewidth=2)
+
+#plot
+plt.xlabel('Smarts')
+plt.ylabel('Probability')
+plt.title(r'$\mathrm{Histogram\ of\ IQ:}\ \mu=%.3f,\ \sigma=%.3f$' %(mu, sigma))
+plt.grid(True)
+
+plt.show()
+
+
+
+
+
+
 
 #%%
 parser = argparse.ArgumentParser(description="MD/FEP Analysis")
