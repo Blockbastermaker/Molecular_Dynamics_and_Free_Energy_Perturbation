@@ -24,17 +24,19 @@ fepanalysis toolkit can be installed by only three simple steps:
     conda activate py37
 
 3 - Download and install FEP Analysis toolkit:
+
     git clone https://github.com/nouraldinkahlous/Molecular_Dynamics_and_Free_Energy_Perturbation.git
 
     pip -e install fepanalysis
 
 
 Optional:
- Check your installation by running the tests included in the fepanalysis folder.
 
-cd fepanalysis; python -m unittest test_fepanalysis/test_fepanalysis.py
+    Check your installation by running the tests included in the fepanalysis folder.
+
+    cd fepanalysis; python -m unittest test_fepanalysis/test_fepanalysis.py
 
 
 TIP: Do not forget to activate your py37 environment before using fepanalysis.
 
-conda activate py37
+    conda activate py37
