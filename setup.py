@@ -6,28 +6,28 @@ with open("README.md", "r") as fh:
 
 setup(name='fepanalysis',
       version='1.0',
-      description='Alchemical transformations MD analisys',
+      description='Alchemical transformations MD/FEP analysis',
       long_description=long_description,
       long_description_content_type="text/markdown",
       classifiers=[
         'Development Status :: Release',
         'License :: MIT License',
-        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.7.4',
         "Operating System :: OS Linux",
-        'Topic :: Molecular Mechanics :: Force Field parameterization',
+        'Topic :: Alchemical transformations analysis',
       ],
       keywords='FEP ',
-      url='https://github.com/Isra3l/ligpargen',
-      author='Israel Cabeza de Vaca Lopez',
-      author_email='israel.cabezadevaca@icm.uu.se',
+      url='https://github.com/nouraldinkahlous/Molecular_Dynamics_and_Free_Energy_Perturbation',
+      author='Nour Aldin Kahlous & Israel Cabeza de Vaca Lopez',
+      author_email='Nouraldinkahlous@gmail.com',
       license='MIT License',
       packages=find_packages(),
       install_requires=[
-          'markdown', 'numpy'
+          'markdown','numpy',"seaborn"
       ],
       entry_points={
           'console_scripts': ['feptool=fepanalysis.feptool:main'],
       },
       include_package_data=True,
-      python_requires='==3.7.*',
+      python_requires='==3.7.4',
       zip_safe=False)
