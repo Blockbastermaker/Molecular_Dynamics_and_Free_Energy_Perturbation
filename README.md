@@ -27,7 +27,7 @@ fepanalysis toolkit can be installed by only three simple steps:
 
     git clone https://github.com/nouraldinkahlous/Molecular_Dynamics_and_Free_Energy_Perturbation.git
 
-    pip -e install fepanalysis
+    pip install -e fepanalysis
 
 
 Optional:

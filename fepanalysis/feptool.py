@@ -38,13 +38,12 @@ def main():
     logger.info('Starting FEP analysis')
 
     dEs, State_A_df, State_B_df = Q.parser(args)
-
     DG_df = None
 
     if args.estimator =='Zwanzig_Estimator':
 
         DG_df = estimators.Zwanzig_Estimator(dEs,None)
-
+        print(DG_df)
 
     if args.convergence_analysis is not None:
 

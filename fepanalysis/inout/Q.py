@@ -2,7 +2,7 @@ import glob
 import pandas as pd
 import concurrent
 import struct
-
+import os
 import logging
 logger = logging.getLogger(__name__)
 
