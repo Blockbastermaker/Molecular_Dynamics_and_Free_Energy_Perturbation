@@ -15,7 +15,7 @@ fepanalysis toolkit can be installed by only three simple steps:
 
 1 - Download and install conda (anaconda or minicoda):
 
-wget https://repo.anaconda.com/archive/Anaconda3-2019.03-Linux-x86_64.sh
+    wget https://repo.anaconda.com/archive/Anaconda3-2019.03-Linux-x86_64.sh
 
 2 - create and activate Python 3.7.4 environment:
 
