@@ -23,11 +23,11 @@ setup(name='fepanalysis',
       license='MIT License',
       packages=find_packages(),
       install_requires=[
-          'markdown','numpy',"seaborn=0.10.0"
+          'markdown','numpy',"seaborn==0.10.0"
       ],
       entry_points={
           'console_scripts': ['fepanalysis=fepanalysis.feptool:main'],
       },
       include_package_data=True,
-      python_requires='==3.7.4',
+      python_requires='==3.7.*',
       zip_safe=False)
