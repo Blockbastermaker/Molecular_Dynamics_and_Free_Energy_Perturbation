@@ -1,6 +1,6 @@
 # **FEP Analysis v1.0**
 
-**Author:** &nbsp;&nbsp;Nour Aldin Kahlous & Isreal cabza de Vaca</br>
+**Author:** &nbsp;&nbsp;Nour Aldin Kahlous & Israel Cabeza de Vaca Lopez</br>
 **Email:**  &nbsp;&nbsp;&nbsp;Nouraldinkahlous@gmail.com </br>
 **Place:** &nbsp;&nbsp;&nbsp; Jens Carlsson Lab at Uppsala University</br>
 **Date:** &nbsp;&nbsp;  2020-2021
