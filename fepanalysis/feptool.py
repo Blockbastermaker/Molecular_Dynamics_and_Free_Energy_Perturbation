@@ -75,8 +75,8 @@ if __name__ == "__main__":
 # end_time = datetime.now()
 # print('Duration: {}'.format(end_time - start_time))
 
-x=[i.split('\\')[1] for i in EnergyFiles_Lst]
-x.count([i.split('\\')[1] for i in EnergyFiles_Lst][0])
+# x=[i.split('\\')[1] for i in EnergyFiles_Lst]
+# x.count([i.split('\\')[1] for i in EnergyFiles_Lst][0])
 
 
 # %%
