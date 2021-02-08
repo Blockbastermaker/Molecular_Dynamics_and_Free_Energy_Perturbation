@@ -7,24 +7,26 @@
 
 **Description:** Comprehensive MD/FEP Analysis 
 
-**Note:** The
+**Note:** 
 
 ## **INSTALATION**
 
-MD/FEP Analysis requires the following:
+fepanalysis toolkit can be installed by only three simple steps:
 
-1 - Python 3.7.4
+1 - Download and install conda (anaconda or minicoda):
+
+wget https://repo.anaconda.com/archive/Anaconda3-2019.03-Linux-x86_64.sh
+
+2 - create and activate Python 3.7.4 environment:
 
     conda create --name py37 python=3.7.4
 
-2 - activate the conda environment:
     conda activate py37
 
 3 - Download and install FEP Analysis toolkit:
     git clone https://github.com/nouraldinkahlous/Molecular_Dynamics_and_Free_Energy_Perturbation.git
 
     pip -e install fepanalysis
-
 
 
 Optional:
