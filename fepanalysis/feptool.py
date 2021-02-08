@@ -5,7 +5,7 @@ from .inout import Q
 from . import estimators
 from . import tools
 from . import plots
-
+import os
 import logging
 logger = logging.getLogger(__name__)
 
