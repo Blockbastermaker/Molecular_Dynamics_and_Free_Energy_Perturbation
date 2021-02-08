@@ -374,9 +374,9 @@ def Plot_PDF_Matrix():
 
 #%%
 #os.chdir("/Users/nour/New_qfep/") #MAC
-os.chdir("Z:/jobs/Qfep_NEW/")
+os.chdir("Z:/jobs/Final_results/beta2_active_test1/1.protein/FEP_adrenaline-cimaterol/FEP1/310/1")
 #os.chdir("G:/PhD/Project/En")
-EnergyFiles_Lst = [filename for filename in glob.glob("FEP2*.en")]  
+EnergyFiles_Lst = [filename for filename in glob.glob("FEP1*.en")]  
 State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadBinary(EnergyFiles_Lst)
 #State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadAndCollectBinariesInParallel(EnergyFiles_Lst)
 State_A_df = createDataFrames(State_A_RawEnergies_Lst)
@@ -403,6 +403,14 @@ Plot_dG_by_Lambda(Zwanzig_df)
 
 
 
+#%%
+def TI_Estimator(State_A_df, State_B_df):
+    dU_dH_df=(pd.DataFrame({"lambda":State_A_df["Lambda"],"fep":State_B_df["Q_sum"] - State_A_df["Q_sum"] })).sort_values('lambda')
+    dU_dH_df.reset_index(drop=True,inplace=True)
+    dU_dH_df.index.names = ['time']
+    dU_dH_df.set_index(['lambda'], append=True,inplace=True)
+    
+    
 #%%
 def Plot_PDF_Matrix():
     Energies_df=(pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"State_A_G":State_A_df["Q_sum"] ,"State_B_Lambda":State_B_df["Lambda"],"State_B_G":State_B_df["Q_sum"],"E":State_B_df["Q_sum"] - State_A_df["Q_sum"],"Window":State_A_df["Lambda"].astype(str)+"_"+State_B_df["Lambda"].astype(str)})).sort_values('State_A_Lambda')
@@ -492,4 +500,98 @@ x=[i.split('\\')[1] for i in EnergyFiles_Lst]
 x.count([i.split('\\')[1] for i in EnergyFiles_Lst][0])
 
 
+# %%
+
+
+"""Thermodynamic integration (TI).
+    Parameters
+    ----------
+    verbose : bool, optional
+        Set to True if verbose debug output is desired.
+    Attributes
+    ----------
+    delta_f_ : DataFrame
+        The estimated dimensionless free energy difference between each state.
+    d_delta_f_ : DataFrame
+        The estimated statistical uncertainty (one standard deviation) in 
+        dimensionless free energy differences.
+    states_ : list
+        Lambda states for which free energy differences were obtained.
+    """
+
+def __init__( verbose=False):
+        verbose = verbose
+
+def fit(dHdl):
+        """
+        Compute free energy differences between each state by integrating
+        dHdl across lambda values.
+        Parameters
+        ----------
+        dHdl : DataFrame 
+            dHdl[n,k] is the potential energy gradient with respect to lambda
+            for each configuration n and lambda k.
+        """
+
+        # sort by state so that rows from same state are in contiguous blocks,
+        # and adjacent states are next to each other
+        dHdl = dHdl.sort_index(level=dHdl.index.names[1:])
+
+        # obtain the mean and variance of the mean for each state
+        # variance calculation assumes no correlation between points
+        # used to calculate mean
+        means = dHdl.mean(level=dHdl.index.names[1:])
+        variances = np.square(dHdl.sem(level=dHdl.index.names[1:]))
+        
+        # get the lambda names
+        l_types = dHdl.index.names[1:]
+
+        # obtain vector of delta lambdas between each state
+        dl = means.reset_index()[means.index.names[:]].diff().iloc[1:].values
+
+        # apply trapezoid rule to obtain DF between each adjacent state
+        deltas = (dl * (means.iloc[:-1].values + means.iloc[1:].values)/2).sum(axis=1)
+
+        # build matrix of deltas between each state
+        adelta = np.zeros((len(deltas)+1, len(deltas)+1))
+        ad_delta = np.zeros_like(adelta)
+
+        for j in range(len(deltas)):
+            out = []
+            dout = []
+            for i in range(len(deltas) - j):
+                out.append(deltas[i] + deltas[i+1:i+j+1].sum())
+
+                # Define additional zero lambda
+                a = [0.0] * len(l_types)
+
+                # Define dl series' with additional zero lambda on the left and right
+                dll = np.insert(dl[i:i + j + 1], 0, [a], axis=0)
+                dlr = np.append(dl[i:i + j + 1], [a], axis=0)
+
+                # Get a series of the form: x1, x1 + x2, ..., x(n-1) + x(n), x(n)
+                dllr = dll + dlr
+
+                # Append deviation of free energy difference between state i and i+j+1
+                dout.append((dllr ** 2 * variances.iloc[i:i + j + 2].values / 4).sum(axis=1).sum())
+            adelta += np.diagflat(np.array(out), k=j+1)
+            ad_delta += np.diagflat(np.array(dout), k=j+1)
+
+        # yield standard delta_f_ free energies between each state
+        delta_f_ = pd.DataFrame(adelta - adelta.T,
+                                     columns=means.index.values,
+                                     index=means.index.values)
+
+        # yield standard deviation d_delta_f_ between each state
+        d_delta_f_ = pd.DataFrame(np.sqrt(ad_delta + ad_delta.T),
+                                       columns=variances.index.values,
+                                       index=variances.index.values)
+        globals()["dw"] =delta_f_
+        states_ = means.index.values.tolist()
+        print(states_)
+        print(delta_f_)
+        print( delta_f_.loc[0.00, 1.00])
+        return 
+    
+fit(dU_dH_df)
 # %%
