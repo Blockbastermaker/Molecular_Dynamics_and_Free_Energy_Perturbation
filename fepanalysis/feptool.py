@@ -48,6 +48,7 @@ def main():
         TI_dG = estimators.fit(dU_dH_df)
         print("ZW: ",Zwanzig_dG )
         print("TI: ", TI_dG)
+        
     if args.convergence_analysis is not None:
 
         args.convergence_analysis=args.convergence_analysis[0].split(',')
