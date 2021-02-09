@@ -43,8 +43,11 @@ def main():
     if args.estimator =='Zwanzig_Estimator':
 
         DG_df = estimators.Zwanzig_Estimator(dEs,None)
-        print(DG_df)
-
+        dU_dH_df=estimators.TI_Estimator(State_A_df, State_B_df)
+        Zwanzig_dG = DG_df['dG_Average'].iloc[-1]
+        TI_dG = estimators.fit(dU_dH_df)
+        print("ZW: ",Zwanzig_dG )
+        print("TI: ", TI_dG)
     if args.convergence_analysis is not None:
 
         args.convergence_analysis=args.convergence_analysis[0].split(',')
