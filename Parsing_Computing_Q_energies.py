@@ -9,9 +9,11 @@ import pandas as pd
 import re
 import concurrent.futures
 import argparse
+from pandas.core.frame import DataFrame
 import seaborn as sns
 from scipy.stats import norm
 from seaborn.utils import despine
+from alchemlyb.estimators import BAR
 
 #%%
 
@@ -373,16 +375,16 @@ def Plot_PDF_Matrix():
 #if '__name__' == '__main__':
 
 #%%
-os.chdir("/Users/nour/New_qfep/qfep_small2") #MAC
-#os.chdir("Z:/jobs/Final_results/beta2_active_test1/1.protein/FEP_adrenaline-cimaterol/FEP1/310/1")
+#os.chdir("/Users/nour/New_qfep/qfep_small2") #MAC
+os.chdir("Z:/jobs/Qfep_NEW/")
 #os.chdir("G:/PhD/Project/En")
-EnergyFiles_Lst = [filename for filename in glob.glob("FEP1*.en")]  
+EnergyFiles_Lst = [filename for filename in glob.glob("FEP2*.en")]  
 State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadBinary(EnergyFiles_Lst)
 #State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadAndCollectBinariesInParallel(EnergyFiles_Lst)
 State_A_df = createDataFrames(State_A_RawEnergies_Lst)
 State_B_df = createDataFrames(State_B_RawEnergies_Lst)
 #State_A_Energies_df,State_B_Energies_df=dE_ParallelCalculationPrepare()
-dEs =  dE_Calculation(None)
+dEs =  dE_Calculation3()
 #dEs =  Run_dE_ParallelCalculation(State_A_Energies_df,State_B_Energies_df)
 Zwanzig_df, Zwanzig_Final_dG= Zwanazig_Estimator(dEs,None)
 
@@ -413,6 +415,124 @@ def TI_Estimator(State_A_df, State_B_df):
 
 
 #%%
+##### BAR ready
+dEs_df=dEs
+dEs_list_F=[]
+dEs_list_R=[]
+Lambdas=set([re.split('_|-',dEs_df.columns[i-1])[0] for i in range(len(dEs_df.columns))])
+for i in range(1,len(dEs_df.columns),2):
+    dE_R=pd.DataFrame(columns=Lambdas)
+    dE_F=pd.DataFrame(columns=Lambdas)
+    #x=(re.split('_|-',dEs_df.columns[i-1])[0])
+    dE_F[re.split('_|-',dEs_df.columns[i])[0]]=dEs_df.iloc[:,i]
+    dE_F["fep-lambda"]=float(re.split('_|-',dEs_df.columns[i])[2])
+    dE_R[re.split('_|-',dEs_df.columns[i-1])[0]]=dEs_df.iloc[:,i-1]
+    dE_R["fep-lambda"]=float(re.split('_|-',dEs_df.columns[i-1])[2])
+    dEs_list_R.append(dE_R)
+    dEs_list_F.append(dE_F)
+dEs_ready_F=pd.concat(dEs_list_F,ignore_index=False,sort=False)
+#del dEs_ready['0.0']
+dEs_ready_R=pd.concat(dEs_list_R,ignore_index=False,sort=False)
+
+dEs_ready= dEs_ready_F.append(dEs_ready_R,ignore_index=False,sort=False)
+x=dEs_ready['fep-lambda'].mode().values[0]
+
+dfwf = dEs_ready_F[dEs_ready_F['fep-lambda'] == x]
+dfwr = dEs_ready_R[dEs_ready_R['fep-lambda'] == x]
+dfwf.fillna(dfwr,inplace=True)
+dEs_ready_F = dEs_ready_F[dEs_ready_F['fep-lambda'] != x]
+dEs_ready_F= dEs_ready_F.append(dfwf,ignore_index=False,sort=False)
+dEs_ready_R = dEs_ready_R[dEs_ready_R['fep-lambda'] != x]
+dEs_ready= dEs_ready_F.append(dEs_ready_R,ignore_index=False,sort=False)
+dEs_ready = dEs_ready.reindex(sorted(dEs_ready.columns), axis=1)
+dEs_ready.replace(np.nan, 0, inplace=True)
+
+#dEs_ready=pd.concat([dEs_ready_R,dEs_ready], axis=0)
+#del dEs_ready_R['1.0']
+#dEs_ready.fillna(dEs_ready_R,inplace=True)
+# replace zeroes in initial dataframe with nan
+#dEs_ready.replace(0, np.nan, inplace=True)
+# replace the nan values with the reverse dataframe --
+# this should not overwrite any of the fwd work values
+#dEs_ready[dEs_ready.isnull()] = dEs_ready_R
+#dEs_ready.append(dEs_list_R[0],ignore_index=False,sort=False)
+# replace remaining nan values back to zero
+# dfw = dEs_ready_R#[dEs_ready_R['fep-lambda'] != 1.0]
+# #dfw = dEs_ready_R[dEs_ready_R['fep-lambda'] == min(dEs_ready_R['fep-lambda'])]
+# dEs_ready=dEs_ready.append(dfw,ignore_index=False,sort=False)
+# #dEs_ready=pd.concat([dEs_ready,dfw],levels =['fep-lambda'], join="inner",ignore_index=False,sort=False)
+# dEs_ready = dEs_ready.reindex(sorted(dEs_ready.columns), axis=1)
+
+#dEs_ready.replace(np.nan, 0, inplace=True)
+#dEs_ready=dEs_ready.groupby(['fep-lambda'], as_index=False).mean()
+
+dEs_ready.index=dEs_ready.index.astype(float)
+dEs_ready.index.names = ['time']
+dEs_ready.set_index(['fep-lambda'], append=True,inplace=True)
+dEs_ready.columns=dEs_ready.columns.astype(float)
+dEs_ready = dEs_ready.reindex(sorted(dEs_ready.columns), axis=1)
+# sort final dataframe by `fep-lambda` (as opposed to `timestep`)
+u_nk = dEs_ready.sort_index(level=dEs_ready.index.names[1:])
+
+bar_vdw = BAR().fit(u_nk)
+bar_vdw.delta_f_
+bar_vdw.delta_f_.loc[0.00, 1.00]
+#%%
+from alchemlyb.estimators import BAR
+bar_vdw = BAR().fit(u_nk)
+
+bar_vdw.delta_f_
+bar_vdw.delta_f_.loc[0.00, 1.00]
+
+df1=dEs_ready.dropna(axis=1, how="all", thresh=None, subset=None, inplace=False)
+dr1=dEs_ready_R.dropna(axis=1, how="all", thresh=None, subset=None, inplace=False)
+ pd.merge(dEs_ready, dfw, how="outer")
+ dEs_ready.append( dEs_ready_R)
+del df1[0.0]
+#%%
+#barsemiready
+dEs_df=dEs
+dEs_list_F=[]
+dEs_list_R=[]
+Lambdas=set([re.split('_|-',dEs_df.columns[i-1])[0] for i in range(len(dEs_df.columns))])
+for i in range(1,len(dEs_df.columns),2):
+    dE_R=pd.DataFrame(columns=Lambdas)
+    dE_F=pd.DataFrame(columns=Lambdas)
+    #x=(re.split('_|-',dEs_df.columns[i-1])[0])
+    dE_F[re.split('_|-',dEs_df.columns[i])[0]]=dEs_df.iloc[:,i]
+    dE_F["fep-lambda"]=float(re.split('_|-',dEs_df.columns[i])[2])
+    dE_R[re.split('_|-',dEs_df.columns[i-1])[0]]=dEs_df.iloc[:,i-1]
+    dE_R["fep-lambda"]=float(re.split('_|-',dEs_df.columns[i-1])[2])
+    dEs_list_R.append(dE_R)
+    dEs_list_F.append(dE_F)
+dEs_ready=pd.concat(dEs_list_F,ignore_index=False,sort=False)
+del dEs_ready['0.0']
+dEs_ready_R=pd.concat(dEs_list_R,ignore_index=False,sort=False)
+del dEs_ready_R['1.0']
+# replace zeroes in initial dataframe with nan
+#dEs_ready.replace(0, np.nan, inplace=True)
+# replace the nan values with the reverse dataframe --
+# this should not overwrite any of the fwd work values
+#dEs_ready[dEs_ready.isnull()] = dEs_ready_R
+#dEs_ready.append(dEs_list_R[0],ignore_index=False,sort=False)
+# replace remaining nan values back to zero
+#dEs_ready.replace(np.nan, 0, inplace=True)
+dfw = dEs_ready_R#[dEs_ready_R['fep-lambda'] != 1.0]
+#dfw = dEs_ready_R[dEs_ready_R['fep-lambda'] == 0.0]
+dEs_ready=dEs_ready.append(dfw,ignore_index=False,sort=False)
+dEs_ready.replace(np.nan, 0, inplace=True)
+dEs_ready.index=dEs_ready.index.astype(float)
+dEs_ready.index.names = ['time']
+dEs_ready.set_index(['fep-lambda'], append=True,inplace=True)
+dEs_ready.columns=dEs_ready.columns.astype(float)
+dEs_ready = dEs_ready.reindex(sorted(dEs_ready.columns), axis=1)
+# sort final dataframe by `fep-lambda` (as opposed to `timestep`)
+u_nk = dEs_ready.sort_index(level=dEs_ready.index.names[1:])
+
+bar_vdw = BAR().fit(u_nk)
+bar_vdw.delta_f_
+bar_vdw.delta_f_.loc[0.00, 1.00]
+#%%
 
 #def BAR_Estimator(State_A_df, State_B_df):
 
@@ -423,18 +543,92 @@ State_B_Energies_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('State_B_Lam
 State_B_Energies_df=State_B_Energies_df.transpose()
 Es=pd.DataFrame()
 Es=pd.DataFrame(columns=State_A_Energies_df.columns)
-State_B_Energies_df.columns=State_A_Energies_df.columns
+State_B_Energies_df.columns=list(State_A_Energies_df.columns.values)
 Es_list=[]
 for i in range(len(State_A_Energies_df.columns)):
     E=State_A_Energies_df.columns[i]*State_A_Energies_df+(1-State_A_Energies_df.columns[i])*State_B_Energies_df
     E["fep-lambda"]=State_A_Energies_df.columns[i]
     Es_list.append(E)
-Es=pd.concat(Es_list,ignore_index=True,sort=False)
+    print(E)
+Es=pd.concat(Es_list,ignore_index=False,sort=False)
 Es.index=Es.index.astype(float)
 Es.index.names = ['time']
 Es.set_index(['fep-lambda'], append=True,inplace=True)
 Es.columns=Es.columns.astype(float)
+Es= Es*-0.592
+Es
 
+
+#%%
+##2
+Energies_df=(pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"State_A_G":State_A_df["Q_sum"] ,"State_B_Lambda":State_B_df["Lambda"],"State_B_G":State_B_df["Q_sum"],"E":State_B_df["Q_sum"] - State_A_df["Q_sum"] })).sort_values('State_A_Lambda')
+State_A_Energies_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('State_A_Lambda',sort=False)['State_A_G'].apply(list)),orient='index')
+State_A_Energies_df=State_A_Energies_df.transpose()
+State_B_Energies_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('State_B_Lambda',sort=False)['State_B_G'].apply(list)),orient="index") 
+State_B_Energies_df=State_B_Energies_df.transpose()
+Es=pd.DataFrame()
+Es=pd.DataFrame(columns=State_A_Energies_df.columns)
+State_B_Energies_df=State_B_Energies_df.columns*State_B_Energies_df
+State_A_Energies_df=State_A_Energies_df.columns*State_A_Energies_df
+State_B_Energies_df.columns=list(State_A_Energies_df.columns.values)
+
+Es=State_A_Energies_df+ State_B_Energies_df
+Es["fep-lambda"]=State_A_Energies_df.columns
+Es.index=Es.index.astype(float)
+Es.index.names = ['time']
+Es.set_index(['fep-lambda'], append=True,inplace=True)
+Es.columns=Es.columns.astype(float)
+Es= Es*-0.592
+
+
+#%%
+##3
+Energies_df=(pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"State_A_G":State_A_df["Q_sum"] ,"State_B_Lambda":State_B_df["Lambda"],"State_B_G":State_B_df["Q_sum"],"E":State_B_df["Q_sum"] - State_A_df["Q_sum"] })).sort_values('State_A_Lambda')
+State_A_Energies_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('State_A_Lambda',sort=False)['State_A_G'].apply(list)),orient='index')
+State_A_Energies_df=State_A_Energies_df.transpose()
+State_B_Energies_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('State_B_Lambda',sort=False)['State_B_G'].apply(list)),orient="index") 
+State_B_Energies_df=State_B_Energies_df.transpose()
+Es=pd.DataFrame()
+Es=pd.DataFrame(columns=State_A_Energies_df.columns)
+State_B_Energies_df=State_B_Energies_df.columns*State_B_Energies_df
+State_A_Energies_df=State_A_Energies_df.columns*State_A_Energies_df
+State_B_Energies_df.columns=list(State_A_Energies_df.columns.values)
+Es=State_A_Energies_df+ State_B_Energies_df
+dEs_list=[]
+dEs_ready=pd.DataFrame(columns=State_A_Energies_df.columns.values)
+for i in range(len(Es.columns)):
+    print('HHHHH', i)
+    for x in range(len(Es.columns)):
+        dE=pd.DataFrame(columns=State_A_Energies_df.columns.values)
+        dE[x]=(Es.loc[x].values-Es.loc[i].values)
+        dE["fep-lambda"]=Es.columns[i]
+        dEs_list.append(dE)
+dEs_ready=pd.concat(dEs_list,ignore_index=False,sort=False)
+dEs_ready.index=dEs_ready.index.astype(float)
+dEs_ready.index.names = ['time']
+dEs_ready.set_index(['fep-lambda'], append=True,inplace=True)
+dEs_ready.columns=dEs_ready.columns.astype(float)
+dEs= dEs*-0.592
+dEs
+
+
+#%%
+dEx=pd.read_csv("E:\\de2.csv")
+dEx=dEx.astype('float')
+dEx.set_index(['time'] ,append=False,inplace=True)
+dEx.set_index(['fep-lambda'], append=True,inplace=True)
+dEx.columns= dEx.columns.astype('float')
+#dEs= dEs*-0.592
+
+#%%
+from alchemlyb.estimators import BAR
+
+bar_vdw = BAR().fit(dEx)
+
+bar_vdw.delta_f_
+bar_vdw.delta_f_.loc[0.00, 1.00]
+#%%
+dEs_ready.to_csv("E:\\de2.csv",index=True)
 
 #%%
 def Plot_PDF_Matrix():
@@ -623,92 +817,99 @@ fit(dU_dH_df)
 
 import numpy as np
 import pandas as pd
-from pymbar import BAR as BAR_
+
 from sklearn.base import BaseEstimator
 
+from pymbar import MBAR as MBAR_
 
-def fit(u_nk):
+
+class MBAR(BaseEstimator):
+    """Multi-state Bennett acceptance ratio (MBAR).
+    Parameters
+    ----------
+    maximum_iterations : int, optional
+        Set to limit the maximum number of iterations performed.
+    relative_tolerance : float, optional
+        Set to determine the relative tolerance convergence criteria.
+    initial_f_k : np.ndarray, float, shape=(K), optional
+        Set to the initial dimensionless free energies to use as a 
+        guess (default None, which sets all f_k = 0).
+    method : str, optional, default="hybr"
+        The optimization routine to use.  This can be any of the methods
+        available via scipy.optimize.minimize() or scipy.optimize.root().
+    verbose : bool, optional
+        Set to True if verbose debug output is desired.
+    Attributes
+    ----------
+    delta_f_ : DataFrame
+        The estimated dimensionless free energy difference between each state.
+    d_delta_f_ : DataFrame
+        The estimated statistical uncertainty (one standard deviation) in
+        dimensionless free energy differences.
+    theta_ : DataFrame
+        The theta matrix.
+    states_ : list
+        Lambda states for which free energy differences were obtained.
+    """
+
+    def __init__(self, maximum_iterations=10000, relative_tolerance=0,
+                 initial_f_k=None, method='hybr', verbose=False):
+
+        self.maximum_iterations = maximum_iterations
+        self.relative_tolerance = relative_tolerance
+        self.initial_f_k = initial_f_k
+        self.method = [dict(method=method)]
+        self.verbose = verbose
+
+        # handle for pymbar.MBAR object
+        self._mbar = None
+
+    def fit(self, u_nk):
         """
-        Compute overlap matrix of reduced potentials using
+        Compute overlap matrix of reduced potentials using multi-state
         Bennett acceptance ratio.
         Parameters
         ----------
-        u_nk : DataFrame
+        u_nk : DataFrame 
             u_nk[n,k] is the reduced potential energy of uncorrelated
             configuration n evaluated at state k.
         """
         # sort by state so that rows from same state are in contiguous blocks
         u_nk = u_nk.sort_index(level=u_nk.index.names[1:])
-
-        # get a list of the lambda states
-        states_ = u_nk.columns.values.tolist()
-
-        # group u_nk by lambda states
+        
         groups = u_nk.groupby(level=u_nk.index.names[1:])
-        N_k = [(len(groups.get_group(i)) if i in groups.groups else 0) for i in u_nk.columns]
+        print(u_nk.groupby(level=u_nk.index.names[1:]))
+        N_k = [(len(groups.get_group(i)) if i in groups.groups else 0) for i in u_nk.columns]        
+        print([(len(groups.get_group(i)) if i in groups.groups else 0) for i in u_nk.columns] ) 
+        self._mbar = MBAR_(u_nk.T, N_k,
+                           maximum_iterations=self.maximum_iterations,
+                           relative_tolerance=self.relative_tolerance,
+                           initial_f_k=self.initial_f_k,
+                           solver_protocol=self.method,
+                           verbose=self.verbose)
 
-        # Now get free energy differences and their uncertainties for each step
-        deltas = np.array([])
-        d_deltas = np.array([])
-        for k in range(len(N_k) - 1):
-            print(k)
-            # get us from lambda step k
-            uk = groups.get_group(states_[k])
-            print(uk)
-            # get w_F
-            w_f = uk.iloc[:, k+1] - uk.iloc[:, k]
+        self.states_ = u_nk.columns.values.tolist()
 
-            # get us from lambda step k+1
-            uk1 = groups.get_group(states_[k+1])
-            # get w_R
-            w_r = uk1.iloc[:, k] - uk1.iloc[:, k+1]
+        # set attributes
+        out = self._mbar.getFreeEnergyDifferences(return_theta=True)
+        attrs = [pd.DataFrame(i,
+                              columns=self.states_,
+                              index=self.states_) for i in out]
 
-            # now determine df and ddf using pymbar.BAR
-            df, ddf = BAR_(w_f, w_r,
-                             method='false-position',
-                             maximum_iterations=10000,
-                             relative_tolerance=1.0e-7,
-                             verbose=True)
-            print(df)
-            deltas = np.append(deltas, df)
-            print(df)
-            d_deltas = np.append(d_deltas,ddf**2)
+        (self.delta_f_, self.d_delta_f_, self.theta_) = attrs 
+        
+        return self
 
-        # build matrix of deltas between each state
-        adelta = np.zeros((len(deltas) + 1, len(deltas) + 1))
-        ad_delta = np.zeros_like(adelta)
+    def predict(self, u_ln):
+        pass
 
-        for j in range(len(deltas)):
-            out = []
-            dout = []
-            for i in range(len(deltas) - j):
-                out.append(deltas[i:i + j + 1].sum())
+# we could also just call the `fit` method
+# directly, since it returns the `MBAR` object
+mbar_vdw = MBAR().fit(Es)
 
-                # See https://github.com/alchemistry/alchemlyb/pull/60#issuecomment-430720742
-                # Error estimate generated by BAR ARE correlated
+mbar_vdw.delta_f_
+mbar_vdw.delta_f_.loc[0.00, 1.00]
 
-                # Use the BAR uncertainties between two neighbour states
-                if j == 0:
-                    dout.append(d_deltas[i:i + j + 1].sum())
-                # Other uncertainties are unknown at this point
-                else:
-                    dout.append(np.nan)
-
-            adelta += np.diagflat(np.array(out), k=j + 1)
-            ad_delta += np.diagflat(np.array(dout), k=j + 1)
-
-        # yield standard delta_f_ free energies between each state
-        delta_f_ = pd.DataFrame(adelta - adelta.T,
-                                     columns=states_,
-                                     index=states_)
-
-        # yield standard deviation d_delta_f_ between each state
-        d_delta_f_ = pd.DataFrame(np.sqrt(ad_delta + ad_delta.T),
-                                       columns=states_,
-                                       index=states_)
-
-        return x   
-x=fit(Es)
 # %%
-Es.astype(float)
+
 # %%
