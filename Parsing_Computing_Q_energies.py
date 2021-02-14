@@ -14,6 +14,7 @@ import seaborn as sns
 from scipy.stats import norm
 from seaborn.utils import despine
 from alchemlyb.estimators import BAR
+import itertools
 
 #%%
 
@@ -415,7 +416,7 @@ def TI_Estimator(State_A_df, State_B_df):
 
 
 #%%
-##### BAR ready
+##### BAR Not ............. ready
 dEs_df=dEs
 dEs_list_F=[]
 dEs_list_R=[]
@@ -464,7 +465,7 @@ dEs_ready.replace(np.nan, 0, inplace=True)
 # dEs_ready = dEs_ready.reindex(sorted(dEs_ready.columns), axis=1)
 
 #dEs_ready.replace(np.nan, 0, inplace=True)
-#dEs_ready=dEs_ready.groupby(['fep-lambda'], as_index=False).mean()
+#dEs_ready=dEs_ready.groupby(['fep-lambda'], as_index=False).count()
 
 dEs_ready.index=dEs_ready.index.astype(float)
 dEs_ready.index.names = ['time']
@@ -490,48 +491,124 @@ dr1=dEs_ready_R.dropna(axis=1, how="all", thresh=None, subset=None, inplace=Fals
  dEs_ready.append( dEs_ready_R)
 del df1[0.0]
 #%%
-#barsemiready
-dEs_df=dEs
-dEs_list_F=[]
-dEs_list_R=[]
-Lambdas=set([re.split('_|-',dEs_df.columns[i-1])[0] for i in range(len(dEs_df.columns))])
-for i in range(1,len(dEs_df.columns),2):
-    dE_R=pd.DataFrame(columns=Lambdas)
-    dE_F=pd.DataFrame(columns=Lambdas)
-    #x=(re.split('_|-',dEs_df.columns[i-1])[0])
-    dE_F[re.split('_|-',dEs_df.columns[i])[0]]=dEs_df.iloc[:,i]
-    dE_F["fep-lambda"]=float(re.split('_|-',dEs_df.columns[i])[2])
-    dE_R[re.split('_|-',dEs_df.columns[i-1])[0]]=dEs_df.iloc[:,i-1]
-    dE_R["fep-lambda"]=float(re.split('_|-',dEs_df.columns[i-1])[2])
-    dEs_list_R.append(dE_R)
-    dEs_list_F.append(dE_F)
-dEs_ready=pd.concat(dEs_list_F,ignore_index=False,sort=False)
-del dEs_ready['0.0']
-dEs_ready_R=pd.concat(dEs_list_R,ignore_index=False,sort=False)
-del dEs_ready_R['1.0']
-# replace zeroes in initial dataframe with nan
-#dEs_ready.replace(0, np.nan, inplace=True)
-# replace the nan values with the reverse dataframe --
-# this should not overwrite any of the fwd work values
-#dEs_ready[dEs_ready.isnull()] = dEs_ready_R
-#dEs_ready.append(dEs_list_R[0],ignore_index=False,sort=False)
-# replace remaining nan values back to zero
-#dEs_ready.replace(np.nan, 0, inplace=True)
-dfw = dEs_ready_R#[dEs_ready_R['fep-lambda'] != 1.0]
-#dfw = dEs_ready_R[dEs_ready_R['fep-lambda'] == 0.0]
-dEs_ready=dEs_ready.append(dfw,ignore_index=False,sort=False)
-dEs_ready.replace(np.nan, 0, inplace=True)
-dEs_ready.index=dEs_ready.index.astype(float)
-dEs_ready.index.names = ['time']
-dEs_ready.set_index(['fep-lambda'], append=True,inplace=True)
-dEs_ready.columns=dEs_ready.columns.astype(float)
-dEs_ready = dEs_ready.reindex(sorted(dEs_ready.columns), axis=1)
-# sort final dataframe by `fep-lambda` (as opposed to `timestep`)
-u_nk = dEs_ready.sort_index(level=dEs_ready.index.names[1:])
+#dEs matrix
+#def dE_Calculation3():
+Energies_df=(pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"State_A_G":State_A_df["Q_sum"] ,"State_B_Lambda":State_B_df["Lambda"],"State_B_G":State_B_df["Q_sum"],"E":State_B_df["Q_sum"] - State_A_df["Q_sum"] })).sort_values('State_A_Lambda')
 
-bar_vdw = BAR().fit(u_nk)
+State_A_Energies_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('State_A_Lambda',sort=False)['State_A_G'].apply(list)),orient='index')
+State_A_Energies_df=State_A_Energies_df.transpose()
+State_B_Energies_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('State_B_Lambda',sort=False)['State_B_G'].apply(list)),orient="index") 
+State_B_Energies_df=State_B_Energies_df.transpose()
+lambdas_list_A=list(State_A_Energies_df.columns)
+lambdas_list_B=list(State_B_Energies_df.columns)
+
+time= [i for i in range(len(State_A_Energies_df))]
+lambdas_df=[]
+States={i:[] for i in range(len(lambdas_list_A))}
+for i in range(len(State_A_Energies_df.columns)):
+    State_A_Energies=State_A_Energies_df.iloc[:,[i]]
+    State_A_Energies.columns=["0"]
+    State_A_Lambda_float=State_A_Energies_df.columns[i]    
+    
+    State_B_Energies=State_B_Energies_df.iloc[:,[i]]
+    State_B_Energies.columns=["0"]
+    State_B_Lambda_float=State_B_Energies_df.columns[i]    
+    E0=State_A_Energies*State_A_Lambda_float+State_B_Energies*State_B_Lambda_float
+    for x in range(len(lambdas_list_A)):
+        #print(State_A_Energies,State_B_Energies)
+        #print("A: ",State_A_Lambda_float,'B:',State_B_Lambda_float,'X:' ,lambdas_list_A[x], 'X+1',lambdas_list_B[x])
+        E1=State_A_Energies*lambdas_list_A[x]+State_B_Energies*lambdas_list_B[x]
+        dE=E1-E0
+        dElam=pd.DataFrame()
+        dE=dE.values.tolist()
+        dE=list(itertools.chain(*dE))
+        States[i].append(dE)
+        lambdas_df.append(str(lambdas_list_A[x]))
+        #print('lambda:',State_A_Lambda_float,lambdas_list_A[x],dE.values)
+        #dE.columns=[State_A_Lambda_float]
+        #dicts0[str(State_A_Lambda_float)]=list(dE.values)
+        #print(dicts0[str(State_A_Lambda_float)])
+        #chunks.append(pd.DataFrame(dicts0))
+for i in range(len(States)):
+    States[i]=list(itertools.chain(*States[i]))
+dEx=pd.DataFrame.from_dict(States)
+dEx.columns=lambdas_list_A
+lambdas_df=lambdas_df*len(State_A_Energies_df)-len(la(mbdas_df
+lambdas_df.sort()
+dEx['time']=time*len(State_A_Energies_df.columns)
+dEx['fep-lambda']=lambdas_df
+dEx=dEx.astype('float')
+dEx.set_index(['time'] ,append=False,inplace=True)
+dEx.set_index(['fep-lambda'], append=True,inplace=True)
+dEx.columns= dEx.columns.astype('float')
+#dEs= dEs*-0.592
+len(lambdas_df)
+len(dEx)
+#%%
+from alchemlyb.estimators import BAR
+
+bar_vdw = BAR().fit(dEx)
+
 bar_vdw.delta_f_
-bar_vdw.delta_f_.loc[0.00, 1.00]
+bar_vdw.delta_f_.loc[0, 1]
+
+
+
+#%%
+eval(df_1.0)
+
+
+dEs_F.index=dEs_F.index.astype(float)
+dEs_F.index.names = ['time']
+dEs_F.set_index(['fep-lambda'], append=True,inplace=True)
+dEs_F.replace(np.nan, 0, inplace=True)
+dEs_F = dEs_F.reindex(sorted(dEs_F.columns), axis=1)
+
+
+
+
+for i in range(len(State_A_Energies_df.columns)):
+    State_A_Energies=State_A_Energies_df.iloc[:,[-i]]
+    State_A_Energies.columns=["0"]
+    State_A_Lambda_float=State_A_Energies_df.iloc[:,[-i]].columns
+    
+    State_B_Energies=State_B_Energies_df.iloc[:,[-i]]
+    State_B_Energies.columns=["0"]
+    State_B_Lambda_float=State_B_Energies_df.iloc[:,[-i]].columns
+    E0=State_A_Energies*State_A_Lambda_float+State_B_Energies*State_B_Lambda_float
+    for x in lambdas_list:
+        E1=State_A_Energies*x+State_B_Energies*x
+        dE=E1-E0
+        print(x)
+        dE.columns=[State_A_Lambda_float]
+        dE['fep-lambda']=x
+        dEs_R=dEs_R.append(dE, ignore_index=True)
+    #return dEs
+
+
+
+
+
+
+
+
+dfdU=State_A_Energies_df
+dfdUb=State_B_Energies_df
+
+dicts0={}
+chunks=[]
+for i  in range(len(dfdU.columns)):
+    for g in range(len(dfdU.columns)):
+        na= str(float(dfdU.columns[g])/1000)
+        dicts0[na]=(list(dfdU.iloc[:, i]-dfdUb.iloc[:, g]))
+    chunks.append(pd.DataFrame(dicts0))
+
+dfdU2 = pd.concat(chunks, ignore_index=False)
+
+
+
+
+
 #%%
 
 #def BAR_Estimator(State_A_df, State_B_df):
@@ -561,24 +638,6 @@ Es
 
 #%%
 ##2
-Energies_df=(pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"State_A_G":State_A_df["Q_sum"] ,"State_B_Lambda":State_B_df["Lambda"],"State_B_G":State_B_df["Q_sum"],"E":State_B_df["Q_sum"] - State_A_df["Q_sum"] })).sort_values('State_A_Lambda')
-State_A_Energies_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('State_A_Lambda',sort=False)['State_A_G'].apply(list)),orient='index')
-State_A_Energies_df=State_A_Energies_df.transpose()
-State_B_Energies_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('State_B_Lambda',sort=False)['State_B_G'].apply(list)),orient="index") 
-State_B_Energies_df=State_B_Energies_df.transpose()
-Es=pd.DataFrame()
-Es=pd.DataFrame(columns=State_A_Energies_df.columns)
-State_B_Energies_df=State_B_Energies_df.columns*State_B_Energies_df
-State_A_Energies_df=State_A_Energies_df.columns*State_A_Energies_df
-State_B_Energies_df.columns=list(State_A_Energies_df.columns.values)
-
-Es=State_A_Energies_df+ State_B_Energies_df
-Es["fep-lambda"]=State_A_Energies_df.columns
-Es.index=Es.index.astype(float)
-Es.index.names = ['time']
-Es.set_index(['fep-lambda'], append=True,inplace=True)
-Es.columns=Es.columns.astype(float)
-Es= Es*-0.592
 
 
 #%%
@@ -613,13 +672,13 @@ dEs
 
 
 #%%
-dEx=pd.read_csv("E:\\de2.csv")
+dEx=pd.read_csv("E:\\de3.csv")
 dEx=dEx.astype('float')
 dEx.set_index(['time'] ,append=False,inplace=True)
 dEx.set_index(['fep-lambda'], append=True,inplace=True)
 dEx.columns= dEx.columns.astype('float')
 #dEs= dEs*-0.592
-
+dEx.columns
 #%%
 from alchemlyb.estimators import BAR
 
