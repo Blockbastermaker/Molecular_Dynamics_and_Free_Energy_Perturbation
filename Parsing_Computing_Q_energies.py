@@ -503,7 +503,7 @@ lambdas_list_A=list(State_A_Energies_df.columns)
 lambdas_list_B=list(State_B_Energies_df.columns)
 
 time= [i for i in range(len(State_A_Energies_df))]
-lambdas_df=[]
+lambdas_df=[i for i in State_A_Energies_df.columns]
 States={i:[] for i in range(len(lambdas_list_A))}
 for i in range(len(State_A_Energies_df.columns)):
     State_A_Energies=State_A_Energies_df.iloc[:,[i]]
@@ -523,7 +523,6 @@ for i in range(len(State_A_Energies_df.columns)):
         dE=dE.values.tolist()
         dE=list(itertools.chain(*dE))
         States[i].append(dE)
-        lambdas_df.append(str(lambdas_list_A[x]))
         #print('lambda:',State_A_Lambda_float,lambdas_list_A[x],dE.values)
         #dE.columns=[State_A_Lambda_float]
         #dicts0[str(State_A_Lambda_float)]=list(dE.values)
@@ -533,7 +532,7 @@ for i in range(len(States)):
     States[i]=list(itertools.chain(*States[i]))
 dEx=pd.DataFrame.from_dict(States)
 dEx.columns=lambdas_list_A
-lambdas_df=lambdas_df*len(State_A_Energies_df)-len(la(mbdas_df
+lambdas_df=lambdas_df*len(State_A_Energies_df)
 lambdas_df.sort()
 dEx['time']=time*len(State_A_Energies_df.columns)
 dEx['fep-lambda']=lambdas_df
@@ -542,8 +541,7 @@ dEx.set_index(['time'] ,append=False,inplace=True)
 dEx.set_index(['fep-lambda'], append=True,inplace=True)
 dEx.columns= dEx.columns.astype('float')
 #dEs= dEs*-0.592
-len(lambdas_df)
-len(dEx)
+
 #%%
 from alchemlyb.estimators import BAR
 
