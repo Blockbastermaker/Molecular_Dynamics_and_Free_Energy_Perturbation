@@ -1,12 +1,12 @@
 import numpy as np
 import pandas as pd
 import re
-
+import glob
 import logging
 logger = logging.getLogger(__name__)
 
 class Estimators():
-    
+            
     def Zwanzig(dEs,steps):
 
         dEs_df=pd.DataFrame(-0.592*np.log(np.mean(np.exp(-dEs.iloc[:steps]/0.592))))
@@ -56,8 +56,6 @@ class Estimators():
         return dU_dH_df
 
 
-
-        
     def TI(dHdl):
         
             """Thermodynamic integration (TI).
@@ -134,7 +132,8 @@ class Estimators():
             states_ = means.index.values.tolist()
             TI=( delta_f_.loc[0.00, 1.00])
             return TI
-    
 
 
-    
+if __name__ == "__main__":
+
+    main()
