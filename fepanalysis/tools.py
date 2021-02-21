@@ -1,4 +1,4 @@
-from . import estimators
+import estimators
 import pandas as pd
  
 def Convergence(df,Estimator,StepsChunk_Int,ReplicatiesCount_Int,EnergyOutputInterval_Int):
