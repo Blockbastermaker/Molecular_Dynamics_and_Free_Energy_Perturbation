@@ -50,7 +50,7 @@ def main():
         print("TI: ", TI_dG)
         
     if args.convergence_analysis is not None:
-
+        print(args.convergence_analysis[0].split(','))
         args.convergence_analysis=args.convergence_analysis[0].split(',')
         convergenc_df = tools.Convergence(dEs,(args.convergence_analysis[0]), int(args.convergence_analysis[1]), int(args.convergence_analysis[2]), int(args.convergence_analysis[3]))
 
