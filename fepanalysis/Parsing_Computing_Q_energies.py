@@ -389,11 +389,14 @@ dEs =  dE_Calculation3()
 #dEs =  Run_dE_ParallelCalculation(State_A_Energies_df,State_B_Energies_df)
 Zwanzig_df, Zwanzig_Final_dG= Zwanazig_Estimator(dEs,None)
 
+from estimators import Estimators as x
 
+zz=x
 
+zz.Zwanzig()
 x.Zwanzig(dEs,None)
 
-convergenc_df= Convergence(dEs,x.Zwanzig,1000,1,10)
+convergenc_df= Convergence(dEs,zz.Zwanzig,1000,1,10)
 #print(convergenc_df)
 Plot_PDF()
 #fig=dEs.plot(subplots=True,figsize=(10,8),layout=(int(len(dEs.columns)/2), 3),sharex=True,legend=True)
@@ -491,8 +494,8 @@ bar_vdw.delta_f_.loc[0.00, 1.00]
 
 df1=dEs_ready.dropna(axis=1, how="all", thresh=None, subset=None, inplace=False)
 dr1=dEs_ready_R.dropna(axis=1, how="all", thresh=None, subset=None, inplace=False)
- pd.merge(dEs_ready, dfw, how="outer")
- dEs_ready.append( dEs_ready_R)
+pd.merge(dEs_ready, dfw, how="outer")
+dEs_ready.append( dEs_ready_R)
 del df1[0.0]
 #%%
 #dEs matrix

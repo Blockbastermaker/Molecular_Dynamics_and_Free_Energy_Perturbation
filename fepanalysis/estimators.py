@@ -5,10 +5,16 @@ import glob
 import logging
 logger = logging.getLogger(__name__)
 
-class Estimators():
-            
-    def Zwanzig(dEs,steps):
+class Estimators:
 
+    def __init__ (self,dEs):
+        self.dEs=dEs
+             
+    def Zwanzig(self,dEs,steps):
+        
+        self.dEs=dEs
+        self.step=steps
+        
         dEs_df=pd.DataFrame(-0.592*np.log(np.mean(np.exp(-dEs.iloc[:steps]/0.592))))
 
         Lambdas=[]
@@ -133,7 +139,8 @@ class Estimators():
             TI=( delta_f_.loc[0.00, 1.00])
             return TI
 
+def main():
+    
+    if __name__ == "__main__":
 
-if __name__ == "__main__":
-
-    main()
+          main()
