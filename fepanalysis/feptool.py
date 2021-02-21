@@ -42,10 +42,10 @@ def main():
 
     if args.estimator =='Zwanzig_Estimator':
 
-        DG_df = estimators.Zwanzig_Estimator(dEs,None)
-        dU_dH_df=estimators.TI_Estimator(State_A_df, State_B_df)
+        DG_df = estimators.Estimators.Zwanzig(dEs,None)
+        dU_dH_df=estimators.Estimators.Create_df_TI(State_A_df, State_B_df)
         Zwanzig_dG = DG_df['dG_Average'].iloc[-1]
-        TI_dG = estimators.fit(dU_dH_df)
+        TI_dG = estimators.Estimators.TI(dU_dH_df)
         print("ZW: ",Zwanzig_dG )
         print("TI: ", TI_dG)
         
