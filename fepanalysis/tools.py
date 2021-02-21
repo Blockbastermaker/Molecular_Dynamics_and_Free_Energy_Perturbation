@@ -7,9 +7,3 @@ def Convergence(df,Estimator,StepsChunk_Int,ReplicatiesCount_Int,EnergyOutputInt
     StepsChunk_Lst=[EnergyOutputInterval_Int*steps_limit/ReplicatiesCount_Int for steps_limit in range((StepsChunk_Int-2)*ReplicatiesCount_Int,len(df)+1,StepsChunk_Int*ReplicatiesCount_Int)]
     Convergence_df=pd.DataFrame({'Number of Steps':StepsChunk_Lst, 'dG':Zwanzig_Final_Lst })
     return Convergence_df
-
-def main():
-    
-    if __name__ == "__main__":
-
-        main()

@@ -132,9 +132,3 @@ class Estimators():
             states_ = means.index.values.tolist()
             TI=( delta_f_.loc[0.00, 1.00])
             return TI
-
-def main():
-    
-    if __name__ == "__main__":
-
-        main()
