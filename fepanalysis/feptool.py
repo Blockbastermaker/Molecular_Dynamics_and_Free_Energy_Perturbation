@@ -53,7 +53,6 @@ def main():
         print(args.convergence_analysis[0].split(','))
         args.convergence_analysis=args.convergence_analysis[0].split(',')
         convergenc_df = tools.Convergence(dEs,(args.convergence_analysis[0]), int(args.convergence_analysis[1]), int(args.convergence_analysis[2]), int(args.convergence_analysis[3]))
-
         print(convergenc_df)
         
         plots.Plot_Convergence(convergenc_df)
