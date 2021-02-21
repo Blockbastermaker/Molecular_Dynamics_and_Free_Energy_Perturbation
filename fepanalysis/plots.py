@@ -68,9 +68,9 @@ class plotting:
         plt.subplots_adjust(wspace=0.2,hspace = 0.5)
         axis = axis.flatten()
         for i in range(1,len(df.columns[:-1])-1):
-            Generate_PDF(df,axis,i,'orange',i+1 ,'gray')
-        Generate_PDF(df,axis,0,'blue',1,'gray')
-        Generate_PDF(df,axis,-1,'red',-2,'gray')
+            plotting.Generate_PDF(df,axis,i,'orange',i+1 ,'gray')
+        plotting.Generate_PDF(df,axis,0,'blue',1,'gray')
+        plotting.Generate_PDF(df,axis,-1,'red',-2,'gray')
         [axis[i].set_xlabel('U (Kcal/mol)',fontsize=18) for i in [-1,-2] ]
         plt.suptitle('Probability Density Function of U', fontsize=20)
         plt.savefig('PDF.png',dpi=300)
