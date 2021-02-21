@@ -52,8 +52,10 @@ def main():
     if args.convergence_analysis is not None:
 
         args.convergence_analysis=args.convergence_analysis[0].split(',')
+        if args.convergence_analysis[0]=='zwanzig' :
+            Estimator=estimators.Estimators.Zwanzig()
         e=args.convergence_analysis[0]
-        convergenc_df = tools.Convergence(dEs,eval(estimators.Estimators.e), int(args.convergence_analysis[1]), int(args.convergence_analysis[2]),10)
+        convergenc_df = tools.Convergence(dEs,Estimator, int(args.convergence_analysis[1]), int(args.convergence_analysis[2]),10)
 
         print(convergenc_df)
         
