@@ -59,11 +59,11 @@ def main():
 
     if args.plot ==True:
 
-        plots.Plot_Hysteresis(DG_df)
-        plots.Plot_dG_by_Lambda(DG_df)
-        plots.Plot_dEs(dEs)
-        plots.Plot_PDF(State_A_df, State_B_df) 
-        plots.Plot_PDF_Matrix(State_A_df, State_B_df)    
+        plots.plotting.Plot_Hysteresis(DG_df)
+        plots.plotting.Plot_dG_by_Lambda(DG_df)
+        plots.plotting.Plot_dEs(dEs)
+        plots.plotting.Plot_PDF(State_A_df, State_B_df) 
+        plots.plotting.Plot_PDF_Matrix(State_A_df, State_B_df)    
 
 if __name__ == "__main__":
 

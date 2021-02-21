@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 
-class ploting:
+class plotting:
     def Plot_Convergence(df):
         plt.plot(df['Number of Steps'],df['dG'])
         plt.title('Convergence Plot',fontsize=16)
