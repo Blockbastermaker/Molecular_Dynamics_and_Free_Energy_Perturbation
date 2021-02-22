@@ -7,9 +7,37 @@ import logging
 logger = logging.getLogger(__name__)
 
 class Binary():
+    """
+    Read and exctract the energies from Q energies files.
+    
+    Read and extract the needed energies form the binray energy files predeuced by
+    Q softwear package, ethier using single core or multicore processing.
+    
+    Returns two pandas dataFramas contains the energies for state A and state B.   
+    
+    """
+    
     
     def ReadBinary(EnergyFiles_Lst):
+        """
+        Read and exctract the energies from Q energies files using one cpu core.
         
+        Read and extract the needed energies form the binray energy files predeuced by
+        Q softwear package, using one cpu core.
+        
+        Parameters
+        ----------
+        EnergyFiles_Lst : List
+                    contains the names of the names of energy file in the needed directory.
+        
+        Returns
+        ---------
+        State_A_RawEnergies : List
+                            Contains state A extracted energies.
+                            
+        State_B_RawEnergies : List
+                            Contains state B extracted energies.
+        """
         State_A_RawEnergies = []
         State_B_RawEnergies = []
 
@@ -47,6 +75,28 @@ class Binary():
     
     def ReadBinaryParallel(file):
         
+        """
+        Read and exctract the energies from Q energies files.
+        
+        Read and extract the needed energies form the binray energy files predeuced by
+        Q softwear package, this funcation is used by the funcation ReadAndCollectBinariesInParallel
+        to read and extact binaries using multiple prosseors.
+        
+        Parameters
+        ----------
+        EnergyFiles_Lst : List
+                    contains the names of the names of energy file in the needed directory.
+        
+        Returns
+        ---------
+        State_A_Lst : List
+                            Contains state A extracted energies.
+                            
+        State_B_Lst : List
+                            Contains state B extracted energies.
+        """
+        
+        
         with open(file,'rb') as f: fileContent = f.read()
 
         Version_Check_Str=str(list(struct.unpack("c" * ((len(fileContent[32:112]))//1),fileContent[32:112]))).replace("b'", "").strip("[],' '").replace("'","").replace(",","").replace(" ","")
@@ -77,7 +127,22 @@ class Binary():
         return State_A_Lst, State_B_Lst
 
     def ReadAndCollectBinariesInParallel(EnergyFiles_Lst):
-
+        """
+        Run the Reading and exctraction of the binary energies using all available proseccores.
+        
+        Parameters
+        ----------
+        EnergyFiles_Lst : List
+                    contains the names of the names of energy file in the needed directory.
+        
+        Returns
+        ---------
+        State_A_RawEnergies : List
+                            Contains state A extracted energies.
+                            
+        State_B_RawEnergies : List
+                            Contains state B extracted energies.
+        """
         State_A_RawEnergies = []
         State_B_RawEnergies = []
         
@@ -89,6 +154,21 @@ class Binary():
         return State_A_RawEnergies, State_B_RawEnergies
         
     def createDataFrames(rawEnergy):
+
+        """
+        Create pandas dataframe for any state energies.
+        
+        Parameters
+        ----------
+        rawEnergy : List
+                Contains the extracted energies from the ReadBinary funcation.  
+        
+        Returns
+        ---------
+        Pandas DataFrame
+                            
+        """
+
 
         Columns_name=["Lambda","Q_sum","Q_bond","Q_angle","Q_torsion","Q_improper","Q_any_ele","Q_any_vdw","Q_Q_ele","Q_Q_vdw","Q_protein_ele","Q_protein_vdw","Q_water_ele","Q_water_vdw","Restraints"]
 

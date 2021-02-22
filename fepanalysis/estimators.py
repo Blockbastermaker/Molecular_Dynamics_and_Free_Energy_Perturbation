@@ -39,9 +39,7 @@ class Estimators():
         Examples
         --------
         >>> Zwanzig(dEs,None)
-        
-        or
-        
+                
         >>> Zwanzig(dEs,1000)
         
         """
