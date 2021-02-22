@@ -350,6 +350,7 @@ def parser(args):
         dEs = dE.Run_dE_ParallelCalculation(State_A_Energies_df,State_B_Energies_df)
 
     else:
+        
 
         State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = Binary.ReadBinary(EnergyFiles_Lst)
         
