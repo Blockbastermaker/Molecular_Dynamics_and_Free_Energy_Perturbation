@@ -48,7 +48,7 @@ def ReadBinary(EnergyFiles_Lst):
             print("Pleaes Check the your Qdyn verion in file: "+file +" ----> format is NOT Supported !!! ")
             exit()
             
-  
+
         UnpackedEnergies_lst=struct.unpack("="+(BinaryStructre_str* EnergySteps_int),fileContent[HeaderSize_int:-264]) #-264 is to exclude the last step (has diffrent stucture in the end h*6 not h*10)
         
         State_A_Lst = [UnpackedEnergies_lst[i:(i + StateUnpackedEnergiesLength_int)] for i in range(StateA_UnpackedEnergiesStart_int, len(UnpackedEnergies_lst), UnpackedEnergiesNextState_int)]
