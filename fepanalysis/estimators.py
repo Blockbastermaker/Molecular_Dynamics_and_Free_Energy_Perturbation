@@ -6,8 +6,46 @@ import logging
 logger = logging.getLogger(__name__)
 
 class Estimators():
+    """
+    Return Estimated binding free energy (dG).
+    
+    Returns the dG between state A and state B using 3 differant Energy estimators
+    
+    Zwanzig, Thermodynamic Integration TI, or Bennett Acceptance Ratio (BAR).
+    
+    """
             
     def Zwanzig(dEs,steps):
+        
+        """
+        Return the estimated binding free energy using Zwanzig estimator.
+        
+        Computes the binding free (dG) form molecular dynamics simulation 
+        between state A and state B using Zwanzig estimator.
+        
+        Parameters
+        ----------
+        dEs : Pandas Dataframe
+            contains the reduced potentail (dE) between the states.
+        
+        steps : interger 
+            the number of the steps to be included in the calculation, set to "None" if all steps are needed.
+        
+        Returns
+        ---------
+        Zwanzig_df : Pandas Dataframe
+            contains the binding free energy (dG) between the states.
+            
+        Examples
+        --------
+        >>> Zwanzig(dEs,None)
+        
+        or
+        
+        >>> Zwanzig(dEs,1000)
+        
+        """
+        
 
         dEs_df=pd.DataFrame(-0.592*np.log(np.mean(np.exp(-dEs.iloc[:steps]/0.592))))
 
@@ -48,6 +86,19 @@ class Estimators():
         return Zwanzig_df
 
     def Create_df_TI(State_A_df, State_B_df):
+        """
+        create the input dataframe needed for the Thermodynamic Integration (TI) function.
+        
+            Parameters
+            ----------
+            State_A_df : Pandas DataFrame for state A energies
+            State_B_df : Pandas DataFrame for state B energies
+            ----------
+            Returns
+            ----------
+            dU_dH_df : Pandas DataFrame 
+        
+        """
         
         dU_dH_df=(pd.DataFrame({"lambda":State_A_df["Lambda"],"fep":State_B_df["Q_sum"] - State_A_df["Q_sum"] })).sort_values('lambda')
         dU_dH_df.reset_index(drop=True,inplace=True)
@@ -61,15 +112,16 @@ class Estimators():
     def TI(dHdl):
         
         
-            """Thermodynamic integration (TI).
+            """
+            Return the estimated binding free energy using Thermodynamic integration (TI) estimator.
             
             Compute free energy differences between each state by integrating
             dHdl across lambda values.
             Parameters
             ----------
-            dHdl : DataFrame 
+            dHdl : Pandas DataFrame 
             ----------
-            Attributes
+            Returns
             ----------
             delta_f_ : DataFrame
                 The estimated dimensionless free energy difference between each state.
@@ -78,6 +130,9 @@ class Estimators():
                 dimensionless free energy differences.
             states_ : list
                 Lambda states for which free energy differences were obtained.
+            
+            TI : float
+                The free energy difference between state 0 and state 1.
             """
             # sort by state so that rows from same state are in contiguous blocks,
             # and adjacent states are next to each other
@@ -139,9 +194,42 @@ class Estimators():
 
     def Convergence(df,Estimator,StepsChunk_Int,ReplicatiesCount_Int,EnergyOutputInterval_Int):
                                         # the last and first steps are not included in the reading
-        # if Estimator=='Zwanzig':
-        #     Estimator=Estimators.Zwanzig
+        """
+        Convergence analysis
+        
+        Retrun a dateframe contains computed free energy dG at a differant steps intervals using 3 differant Energy estimators
+    
+        Zwanzig, Thermodynamic Integration TI, or Bennett Acceptance Ratio (BAR).
+    
+            Parameters
+            ----------
+            df : Pandas DataFrame 
+                Contains the dEs between the states
+                
+            Estimator : funcation 
+                    The Free energy estimating method (Zwanzig or TI or BAR)
             
+            StepsChunk_Int: integer
+                     The Number of Steps(fs) to be used.
+                     
+            ReplicatiesCount_Int: integer
+                    The Number of used replicates.
+            
+            EnergyOutputInterval_Int: integer
+                    The interval which the molecular dynamics simulation softwear
+                    is writing the energies at.
+            ----------
+            Returns
+            ----------
+            Convergence_df : Pandas DataFrame 
+                            Contains the computed dG at each interval.
+            
+            Examples
+            --------
+        >>> Convergence(dEs,Zwanzig,1000,1,10)
+        
+        >>> Convergence(dEs,TI,10000,3,10)        
+        """
         Zwanzig_Final_Lst=[Estimator(df,steps_limit)[1] for steps_limit in range((StepsChunk_Int-2)*ReplicatiesCount_Int,len(df)+1,StepsChunk_Int*ReplicatiesCount_Int)]
         StepsChunk_Lst=[EnergyOutputInterval_Int*steps_limit/ReplicatiesCount_Int for steps_limit in range((StepsChunk_Int-2)*ReplicatiesCount_Int,len(df)+1,StepsChunk_Int*ReplicatiesCount_Int)]
         Convergence_df=pd.DataFrame({'Number of Steps':StepsChunk_Lst, 'dG':Zwanzig_Final_Lst })
