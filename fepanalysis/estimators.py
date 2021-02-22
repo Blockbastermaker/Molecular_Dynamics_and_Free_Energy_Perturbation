@@ -3,6 +3,7 @@ from numpy.core.numeric import _rollaxis_dispatcher
 import pandas as pd
 from sklearn.base import BaseEstimator
 import glob
+import re
 import itertools
 import logging
 logger = logging.getLogger(__name__)
