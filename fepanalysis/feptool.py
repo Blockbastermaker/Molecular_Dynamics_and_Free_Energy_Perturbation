@@ -50,6 +50,7 @@ def main():
         print("TI: ", TI_dG)
         u_nk_df= estimators.Estimators.Create_df_BAR_MBAR(State_A_df, State_B_df)
         BAR_df= estimators.BAR.fit(u_nk_df)
+        print('BAR: ',BAR_df.delta_f_.loc[0.00, 1.00])
     if args.convergence_analysis is not None:
         print(eval('estimators.Estimators.'+args.convergence_analysis[0]))
         args.convergence_analysis=args.convergence_analysis[0].split(',')
