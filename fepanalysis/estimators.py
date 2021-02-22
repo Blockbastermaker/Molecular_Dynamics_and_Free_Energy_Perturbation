@@ -1,6 +1,7 @@
 import numpy as np
 from numpy.core.numeric import _rollaxis_dispatcher
 import pandas as pd
+from pymbar import BAR as BAR_
 from sklearn.base import BaseEstimator
 import glob
 import re
