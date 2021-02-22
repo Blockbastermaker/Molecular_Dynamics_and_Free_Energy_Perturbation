@@ -1,4 +1,5 @@
 #%%
+from fepanalysis.estimators import Zwanzig
 import struct
 import numpy as np
 import os
@@ -389,10 +390,8 @@ dEs =  dE_Calculation3()
 #dEs =  Run_dE_ParallelCalculation(State_A_Energies_df,State_B_Energies_df)
 Zwanzig_df, Zwanzig_Final_dG= Zwanazig_Estimator(dEs,None)
 
-from estimators import Estimators as x
 
-zz=x
-
+from . estimators import Zwanzig
 zz.Zwanzig()
 x.Zwanzig(dEs,None)
 
