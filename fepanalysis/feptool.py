@@ -53,7 +53,7 @@ def main():
         print('BAR: ',BAR_df.delta_f_.loc[0.00, 1.00])
         
         from pymbar import MBAR as MBAR_
-        from alchemlyb import MBAR
+        from alchemlyb.estimators import MBAR
         MBAR_df= MBAR().fit(u_nk_df)
         print('MBAR: ',MBAR_df.delta_f_.loc[0.00, 1.00])
         
