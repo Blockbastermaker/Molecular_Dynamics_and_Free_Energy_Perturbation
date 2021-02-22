@@ -177,6 +177,26 @@ class Binary():
     
 class dE():
     def dE_Calculation(State_A_df, State_B_df):
+        """
+        Calculates the energy diffrance (dE) between lambda states.
+        
+        Calculates the energy diffrance (dE) between lambda states in a forwared (0 to 1)
+        and backwared (1 to 0) direcation using one CPU core.
+        
+        Parameters
+        ----------
+        State_A_df : Pandas DataFrame
+                Contains state A extracted energies.  
+                
+        State_B_df : Pandas DataFrame
+                Contains state B extracted energies.  
+        
+        Returns
+        ---------
+        dEs : Pandas DataFrame
+                            
+        
+        """
 
         dEs=pd.DataFrame()
         Energies_df=(pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"State_A_G":State_A_df["Q_sum"] ,"State_B_Lambda":State_B_df["Lambda"],"State_B_G":State_B_df["Q_sum"],"E":State_B_df["Q_sum"] - State_A_df["Q_sum"] })).sort_values('State_A_Lambda')
@@ -204,7 +224,26 @@ class dE():
         return dEs
     
     def dE_ParallelCalculationPrepare(State_A_df, State_B_df):
+        """
+        Create a Pandas dataframe needed for the function dE_ParallelCalculation. 
 
+        Prepare energies Dataframe for energy differacne (dE) calculations using multiple proscessors.
+        
+        Parameters
+        ----------
+        State_A_df : Pandas DataFrame
+                Contains state A extracted energies.  
+                
+        State_B_df : Pandas DataFrame
+                Contains state B extracted energies.  
+        
+        Returns
+        ---------
+        State_A_Energies_df : Pandas DataFrame
+        
+        State_B_Energies_df : Pandas DataFrame
+        
+        """
         Energies_df=(pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"State_A_G":State_A_df["Q_sum"] ,"State_B_Lambda":State_B_df["Lambda"],"State_B_G":State_B_df["Q_sum"],"E":State_B_df["Q_sum"] - State_A_df["Q_sum"] })).sort_values('State_A_Lambda')
 
         State_A_Energies_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('State_A_Lambda',sort=False)['State_A_G'].apply(list)),orient='index')
@@ -215,6 +254,29 @@ class dE():
         return State_A_Energies_df,State_B_Energies_df
 
     def dE_ParallelCalculation(State_A_Energies_df,State_B_Energies_df,LambdaState_Int):
+        """
+        Calculates the energy diffrance (dE) between lambda states.
+        
+        Calculates the energy diffrance (dE) between lambda states in a forwared (0 to 1)
+        and backwared (1 to 0) direcation, and its a part form run_dE_ParallelCalculation
+        to energy diffrance using multiple proseccores.
+        
+        Parameters
+        ----------
+        State_A_df : Pandas DataFrame
+                Contains state A extracted energies.  
+                
+        State_B_df : Pandas DataFrame
+                Contains state B extracted energies.  
+        
+        LambdaState_Int : Integer
+                State A Lambda 
+        Returns
+        ---------
+        dE : Pandas DataFrame
+                            
+        
+        """
 
         State_A_Energies=State_A_Energies_df.iloc[:,[LambdaState_Int,LambdaState_Int+1]]
         State_A_Energies.columns=["0","1"]
@@ -231,7 +293,25 @@ class dE():
         return dE
         
     def Run_dE_ParallelCalculation(State_A_Energies_df,State_B_Energies_df):
-
+        
+        """
+        Run the calculation of the energy differacne between the states using all available proseccores. 
+        
+        Parameters
+        ----------
+        State_A_Energies_df : Pandas DataFrame
+                Contains state A extracted and prepared energies by the dE_ParallelCalculationPrepare function.  
+                
+        State_A_Energies_df : Pandas DataFrame
+                Contains state B extracted and prepared energies by the dE_ParallelCalculationPrepare function. 
+        
+        Returns
+        ---------
+        dEs : Pandas DataFrame
+        
+        """
+        
+        
         with concurrent.futures.ThreadPoolExecutor() as executor:
 
             dEs=pd.DataFrame()
