@@ -42,17 +42,17 @@ def main():
 
     if args.estimator =='Zwanzig_Estimator':
 
-        DG_df = estimators.Estimators.Zwanzig(dEs,None)
-        dU_dH_df=estimators.Estimators.Create_df_TI(State_A_df, State_B_df)
+        DG_df = estimators.Zwanzig(dEs,None)
+        dU_dH_df=estimators.Create_df_TI(State_A_df, State_B_df)
         Zwanzig_dG = DG_df['dG_Average'].iloc[-1]
-        TI_dG = estimators.Estimators.TI(dU_dH_df)
+        TI_dG = estimators.TI(dU_dH_df)
         print("ZW: ",Zwanzig_dG )
         print("TI: ", TI_dG)
         
     if args.convergence_analysis is not None:
         print(args.convergence_analysis[0].split(','))
         args.convergence_analysis=args.convergence_analysis[0].split(',')
-        convergenc_df = estimators.Estimators.Convergence(dEs,args.convergence_analysis[0], int(args.convergence_analysis[1]), int(args.convergence_analysis[2]), int(args.convergence_analysis[3]))
+        convergenc_df = estimators.Convergence(dEs,eval(args.convergence_analysis[0]), int(args.convergence_analysis[1]), int(args.convergence_analysis[2]), int(args.convergence_analysis[3]))
         print(convergenc_df)
         
         plots.Plot_Convergence(convergenc_df)
