@@ -17,8 +17,8 @@ class plotting:
         Convergence.png :Plot
         
         """
-        plt.plot(df1['Number of Steps'],df1['dG'],label= "ZW")
-        plt.plot(df2['Number of Steps'],df2['dG'],label= "TI")
+        plt.plot(ZW['Number of Steps'],ZW['dG'],label= "ZW")
+        plt.plot(TI['Number of Steps'],TI['dG'],label= "TI")
         plt.title('Convergence Plot',fontsize=16)
         plt.xlabel("Number of Steps",fontsize=14)
         plt.ylabel("ΔG FEP (Kcal/mol)",fontsize=14)
