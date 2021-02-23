@@ -1,5 +1,4 @@
 #%%
-from fepanalysis.estimators import Zwanzig
 import struct
 import numpy as np
 import os
@@ -14,7 +13,6 @@ from pandas.core.frame import DataFrame
 import seaborn as sns
 from scipy.stats import norm
 from seaborn.utils import despine
-from alchemlyb.estimators import BAR
 import itertools
 
 #%%
@@ -377,10 +375,10 @@ def Plot_PDF_Matrix():
 #if '__name__' == '__main__':
 
 #%%
-#os.chdir("/Users/nour/New_qfep/qfep_small2") #MAC
-os.chdir("Z:/jobs/Qfep_NEW/")
+os.chdir("/Users/nour/New_qfep/qfep_small2") #MAC
+#os.chdir("Z:/jobs/Qfep_NEW/")
 #os.chdir("G:/PhD/Project/En")
-EnergyFiles_Lst = [filename for filename in glob.glob("FEP2*.en")]  
+EnergyFiles_Lst = [filename for filename in glob.glob("FEP1*.en")]  
 State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadBinary(EnergyFiles_Lst)
 #State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadAndCollectBinariesInParallel(EnergyFiles_Lst)
 State_A_df = createDataFrames(State_A_RawEnergies_Lst)
@@ -975,4 +973,26 @@ mbar_vdw.delta_f_.loc[0.00, 1.00]
 
 # %%
 
+# %%
+
+    if steps != None:
+        Energies_df=(pd.DataFrame({"lambda":State_A_df["Lambda"],"fep":State_B_df["Q_sum"] - State_A_df["Q_sum"] })).sort_values('lambda')
+        Energies_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('lambda',sort=False)['fep'].apply(list)),orient='index')
+        Energies_df=Energies_df.transpose()
+        Energies_df=Energies_df.iloc[:steps]
+
+        dfl=pd.DataFrame(columns=['lambda','fep'])
+        dU_dH_df=pd.DataFrame(columns=['lambda','fep'])
+        for state in range (len(Energies_df.columns)):
+                dfl=pd.DataFrame(columns=['lambda','fep'])
+                print (col)
+                dfl['fep']=x.iloc[:,state]
+                dfl['lambda']=x.columns.values[state]
+                dU_dH_df=dU_dH_df.append(dfl)
+    else:
+        dU_dH_df=(pd.DataFrame({"lambda":State_A_df["Lambda"],"fep":State_B_df["Q_sum"] - State_A_df["Q_sum"] })).sort_values('lambda')
+    
+    dU_dH_df.reset_index(drop=True,inplace=True)
+    dU_dH_df.index.names = ['time']
+    dU_dH_df.set_index(['lambda'], append=True,inplace=True)
 # %%

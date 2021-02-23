@@ -129,11 +129,30 @@ class Estimators():
         TI : float
             The free energy difference between state 0 and state 1.
         """
+        if steps != None:
+            Energies_df=(pd.DataFrame({"lambda":State_A_df["Lambda"],"fep":State_B_df["Q_sum"] - State_A_df["Q_sum"] })).sort_values('lambda')
+            Energies_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('lambda',sort=False)['fep'].apply(list)),orient='index')
+            Energies_df=Energies_df.transpose()
+            Energies_df=Energies_df.iloc[:steps]
 
-        dU_dH_df=(pd.DataFrame({"lambda":State_A_df["Lambda"][:steps],"fep":State_B_df["Q_sum"][:steps] - State_A_df["Q_sum"][:steps] })).sort_values('lambda')
+            dfl=pd.DataFrame(columns=['lambda','fep'])
+            dU_dH_df=pd.DataFrame(columns=['lambda','fep'])
+            for state in range (len(Energies_df.columns)):
+                    dfl=pd.DataFrame(columns=['lambda','fep'])
+                    print (col)
+                    dfl['fep']=x.iloc[:,state]
+                    dfl['lambda']=x.columns.values[state]
+                    dU_dH_df=dU_dH_df.append(dfl)
+        else:
+            dU_dH_df=(pd.DataFrame({"lambda":State_A_df["Lambda"],"fep":State_B_df["Q_sum"] - State_A_df["Q_sum"] })).sort_values('lambda')
+        
         dU_dH_df.reset_index(drop=True,inplace=True)
         dU_dH_df.index.names = ['time']
-        dU_dH_df.set_index(['lambda'], append=True,inplace=True)
+        dU_dH_df.set_index(['lambda'], append=True,inplace=True)        
+        # dU_dH_df=(pd.DataFrame({"lambda":State_A_df["Lambda"][:steps],"fep":State_B_df["Q_sum"][:steps] - State_A_df["Q_sum"][:steps] })).sort_values('lambda')
+        # dU_dH_df.reset_index(drop=True,inplace=True)
+        # dU_dH_df.index.names = ['time']
+        # dU_dH_df.set_index(['lambda'], append=True,inplace=True)
         dHdl=dU_dH_df
 
         # sort by state so that rows from same state are in contiguous blocks,
@@ -191,7 +210,7 @@ class Estimators():
                                     index=variances.index.values)
         states_ = means.index.values.tolist()
         TI=( delta_f_.loc[0.00, 1.00])
-        return delta_f_, TI
+        return delta_f_ , TI
 
 
     def Create_df_BAR_MBAR(State_A_df, State_B_df):
