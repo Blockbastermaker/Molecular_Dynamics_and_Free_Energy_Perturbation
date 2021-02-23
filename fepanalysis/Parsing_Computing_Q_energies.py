@@ -975,7 +975,7 @@ mbar_vdw.delta_f_.loc[0.00, 1.00]
 
 # %%
 
-    if steps != None:
+    if step != None:
         Energies_df=(pd.DataFrame({"lambda":State_A_df["Lambda"],"fep":State_B_df["Q_sum"] - State_A_df["Q_sum"] })).sort_values('lambda')
         Energies_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('lambda',sort=False)['fep'].apply(list)),orient='index')
         Energies_df=Energies_df.transpose()
