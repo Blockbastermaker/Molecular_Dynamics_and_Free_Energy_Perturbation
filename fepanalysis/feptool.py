@@ -86,5 +86,3 @@ if __name__ == "__main__":
 
 # x=[i.split('\\')[1] for i in EnergyFiles_Lst]
 # x.count([i.split('\\')[1] for i in EnergyFiles_Lst][0])
-
-
