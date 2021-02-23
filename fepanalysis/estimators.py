@@ -104,7 +104,7 @@ class Estimators():
 
 
 
-    def TI(dHdl):
+    def TI(State_A_df,State_B_df,steps):
         
         
             """
@@ -129,6 +129,13 @@ class Estimators():
             TI : float
                 The free energy difference between state 0 and state 1.
             """
+
+            dU_dH_df=(pd.DataFrame({"lambda":State_A_df["Lambda"][:steps],"fep":State_B_df["Q_sum"][:steps] - State_A_df["Q_sum"][:steps] })).sort_values('lambda')
+            dU_dH_df.reset_index(drop=True,inplace=True)
+            dU_dH_df.index.names = ['time']
+            dU_dH_df.set_index(['lambda'], append=True,inplace=True)
+            dHdl=dU_dH_df
+
             # sort by state so that rows from same state are in contiguous blocks,
             # and adjacent states are next to each other
             dHdl = dHdl.sort_index(level=dHdl.index.names[1:])

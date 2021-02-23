@@ -44,6 +44,7 @@ def main():
 
         DG_df, Zwanzig_dG= estimators.Estimators.Zwanzig(dEs,None)
         dU_dH_df=estimators.Estimators.Create_df_TI(State_A_df, State_B_df)
+        print
         #Zwanzig_dG = DG_df['dG_Average'].iloc[-1]
         TI_dG = estimators.Estimators.TI(dU_dH_df)
         print("ZW: ",Zwanzig_dG )
