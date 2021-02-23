@@ -996,3 +996,4 @@ mbar_vdw.delta_f_.loc[0.00, 1.00]
     dU_dH_df.index.names = ['time']
     dU_dH_df.set_index(['lambda'], append=True,inplace=True)
 # %%
+len(State_A_df)/len(df1['Lambda'].unique())
