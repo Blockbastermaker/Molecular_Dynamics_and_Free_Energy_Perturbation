@@ -248,7 +248,7 @@ class Estimators():
         u_nk_df.set_index(['time'] ,append=False,inplace=True)
         u_nk_df.set_index(['fep-lambda'], append=True,inplace=True)
         u_nk_df.columns= u_nk_df.columns.astype('float')
-        u_nk_df.dropna(axis=0)
+        u_nk_df.dropna(axis=0,inplace=True)
         return u_nk_df
 
     def Convergence(df,Estimator,StepsChunk_Int,ReplicatiesCount_Int,EnergyOutputInterval_Int):
