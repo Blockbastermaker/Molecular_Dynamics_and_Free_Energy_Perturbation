@@ -60,10 +60,13 @@ def main():
         
     if args.convergence_analysis is not None:
         args.convergence_analysis=args.convergence_analysis[0].split(',')
-        convergenc_df = estimators.Estimators.Convergence(dEs,eval('estimators.Estimators.'+args.convergence_analysis[0]), int(args.convergence_analysis[1]), int(args.convergence_analysis[2]), int(args.convergence_analysis[3]))
-        print(convergenc_df)
+
+        convergenc_Zwanzig = estimators.Estimators.Convergence(dEs,estimators.Estimators.Zwanzig, int(args.convergence_analysis[1]), int(args.convergence_analysis[2]), int(args.convergence_analysis[3]))
+        print(convergenc_Zwanzig)
         
-        plots.plotting.Plot_Convergence(convergenc_df)
+        # convergenc_TI = estimators.Estimators.Convergence(dEs,estimators.Estimators.TI, int(args.convergence_analysis[1]), int(args.convergence_analysis[2]), int(args.convergence_analysis[3]))
+        # print(convergenc_Zwanzig)
+        # plots.plotting.Plot_Convergence(convergenc_Zwanzig)
 
     if args.plot ==True:
 
