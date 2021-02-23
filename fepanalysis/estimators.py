@@ -209,6 +209,7 @@ class Estimators():
                                     index=variances.index.values)
         states_ = means.index.values.tolist()
         TI=( delta_f_.loc[0.00, 1.00])
+        print (TI)
         return delta_f_ , TI
 
 
