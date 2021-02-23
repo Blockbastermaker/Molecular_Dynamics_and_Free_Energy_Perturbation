@@ -289,7 +289,7 @@ class Estimators():
         
         >>> Convergence(dEs,TI,10000,3,10)        
         """
-        if df2 ==None :
+        if df2 =='None' :
 
             dGs_Lst=[Estimator(df1,steps_limit)[1] for steps_limit in range((StepsChunk_Int-2)*ReplicatiesCount_Int,len(df1)+1,StepsChunk_Int*ReplicatiesCount_Int)]
         
