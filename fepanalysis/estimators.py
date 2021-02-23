@@ -289,12 +289,14 @@ class Estimators():
         
         >>> Convergence(dEs,TI,10000,3,10)        
         """
-        if df2 =='BLANK' :
+        if isinstance(df2, pd.DataFrame):
+
+            dGs_Lst=[Estimator(df1,df2,steps_limit)[1] for steps_limit in range((StepsChunk_Int-2)*ReplicatiesCount_Int,len(df1)+1,StepsChunk_Int*ReplicatiesCount_Int)]
+        
+        else:
 
             dGs_Lst=[Estimator(df1,steps_limit)[1] for steps_limit in range((StepsChunk_Int-2)*ReplicatiesCount_Int,len(df1)+1,StepsChunk_Int*ReplicatiesCount_Int)]
         
-        else:
-            dGs_Lst=[Estimator(df1,df2,steps_limit)[1] for steps_limit in range((StepsChunk_Int-2)*ReplicatiesCount_Int,len(df1)+1,StepsChunk_Int*ReplicatiesCount_Int)]
 
             
         StepsChunk_Lst=[EnergyOutputInterval_Int*steps_limit/ReplicatiesCount_Int for steps_limit in range((StepsChunk_Int-2)*ReplicatiesCount_Int,len(df1)+1,StepsChunk_Int*ReplicatiesCount_Int)]
