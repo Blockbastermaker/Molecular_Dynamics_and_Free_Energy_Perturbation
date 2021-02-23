@@ -139,8 +139,8 @@ class Estimators():
             dU_dH_df=pd.DataFrame(columns=['lambda','fep'])
             for state in range (len(Energies_df.columns)):
                     dfl=pd.DataFrame(columns=['lambda','fep'])
-                    dfl['fep']=x.iloc[:,state]
-                    dfl['lambda']=x.columns.values[state]
+                    dfl['fep']=Energies_df.iloc[:,state]
+                    dfl['lambda']=Energies_df.columns.values[state]
                     dU_dH_df=dU_dH_df.append(dfl)
         else:
             dU_dH_df=(pd.DataFrame({"lambda":State_A_df["Lambda"],"fep":State_B_df["Q_sum"] - State_A_df["Q_sum"] })).sort_values('lambda')
