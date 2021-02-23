@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 class plotting:
-    def Plot_Convergence(df1,df2):
+    def Plot_Convergence(ZW,TI):
         
         """
         Plot the evolution of the free energy (dG) over time.
@@ -17,8 +17,8 @@ class plotting:
         Convergence.png :Plot
         
         """
-        plt.plot(df1['Number of Steps'],df1['dG'])
-        plt.plot(df2['Number of Steps'],df2['dG'])
+        plt.plot(df1['Number of Steps'],df1['dG'],label= "ZW")
+        plt.plot(df2['Number of Steps'],df2['dG'],label= "TI")
         plt.title('Convergence Plot',fontsize=16)
         plt.xlabel("Number of Steps",fontsize=14)
         plt.ylabel("ΔG FEP (Kcal/mol)",fontsize=14)
