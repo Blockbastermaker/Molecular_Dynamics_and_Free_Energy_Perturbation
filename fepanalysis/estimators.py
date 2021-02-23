@@ -314,7 +314,7 @@ class Estimators():
         
         else:
 
-            dGs_Lst=[Estimator(df1,steps_limit)[1] for steps_limit in range((StepsChunk_Int-2)*ReplicatiesCount_Int,int((len(df1)/len(df1.columns))+1),StepsChunk_Int*ReplicatiesCount_Int)]
+            dGs_Lst=[Estimator(df1,steps_limit)[1] for steps_limit in range((StepsChunk_Int-2)*ReplicatiesCount_Int,(len(df1)/(len(df1.cloumns)-1))+1,StepsChunk_Int*ReplicatiesCount_Int)]
         
 
             
