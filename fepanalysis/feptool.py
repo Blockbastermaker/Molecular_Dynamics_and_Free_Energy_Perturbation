@@ -58,12 +58,11 @@ def main():
         print('MBAR: ',MBAR_df.delta_f_.loc[0.00, 1.00])
         
     if args.convergence_analysis is not None:
-        print(eval('estimators.Estimators.'+args.convergence_analysis[0]))
         args.convergence_analysis=args.convergence_analysis[0].split(',')
         convergenc_df = estimators.Estimators.Convergence(dEs,eval('estimators.Estimators.'+args.convergence_analysis[0]), int(args.convergence_analysis[1]), int(args.convergence_analysis[2]), int(args.convergence_analysis[3]))
         print(convergenc_df)
         
-        plots.Plot_Convergence(convergenc_df)
+        plots.plotting.Plot_Convergence(convergenc_df)
 
     if args.plot ==True:
 
