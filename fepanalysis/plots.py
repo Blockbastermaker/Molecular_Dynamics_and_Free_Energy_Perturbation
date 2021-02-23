@@ -22,6 +22,7 @@ class plotting:
         plt.title('Convergence Plot',fontsize=16)
         plt.xlabel("Number of Steps",fontsize=14)
         plt.ylabel("ΔG FEP (Kcal/mol)",fontsize=14)
+        plt.legend()
         plt.savefig('Convergence.png',dpi=300)
         plt.close()
 
