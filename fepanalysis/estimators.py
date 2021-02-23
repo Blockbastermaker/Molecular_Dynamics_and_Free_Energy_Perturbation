@@ -139,7 +139,6 @@ class Estimators():
             dU_dH_df=pd.DataFrame(columns=['lambda','fep'])
             for state in range (len(Energies_df.columns)):
                     dfl=pd.DataFrame(columns=['lambda','fep'])
-                    print (col)
                     dfl['fep']=x.iloc[:,state]
                     dfl['lambda']=x.columns.values[state]
                     dU_dH_df=dU_dH_df.append(dfl)
