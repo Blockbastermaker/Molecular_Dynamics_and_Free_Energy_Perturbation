@@ -107,91 +107,91 @@ class Estimators():
     def TI(State_A_df,State_B_df,steps):
         
         
-            """
-            Return the estimated binding free energy using Thermodynamic integration (TI) estimator.
-            
-            Compute free energy differences between each state by integrating
-            dHdl across lambda values.
-            Parameters
-            ----------
-            dHdl : Pandas DataFrame 
-            ----------
-            Returns
-            ----------
-            delta_f_ : DataFrame
-                The estimated dimensionless free energy difference between each state.
-            d_delta_f_ : DataFrame
-                The estimated statistical uncertainty (one standard deviation) in 
-                dimensionless free energy differences.
-            states_ : list
-                Lambda states for which free energy differences were obtained.
-            
-            TI : float
-                The free energy difference between state 0 and state 1.
-            """
+        """
+        Return the estimated binding free energy using Thermodynamic integration (TI) estimator.
+        
+        Compute free energy differences between each state by integrating
+        dHdl across lambda values.
+        Parameters
+        ----------
+        dHdl : Pandas DataFrame 
+        ----------
+        Returns
+        ----------
+        delta_f_ : DataFrame
+            The estimated dimensionless free energy difference between each state.
+        d_delta_f_ : DataFrame
+            The estimated statistical uncertainty (one standard deviation) in 
+            dimensionless free energy differences.
+        states_ : list
+            Lambda states for which free energy differences were obtained.
+        
+        TI : float
+            The free energy difference between state 0 and state 1.
+        """
 
-            dU_dH_df=(pd.DataFrame({"lambda":State_A_df["Lambda"][:steps],"fep":State_B_df["Q_sum"][:steps] - State_A_df["Q_sum"][:steps] })).sort_values('lambda')
-            dU_dH_df.reset_index(drop=True,inplace=True)
-            dU_dH_df.index.names = ['time']
-            dU_dH_df.set_index(['lambda'], append=True,inplace=True)
-            dHdl=dU_dH_df
+        dU_dH_df=(pd.DataFrame({"lambda":State_A_df["Lambda"][:steps],"fep":State_B_df["Q_sum"][:steps] - State_A_df["Q_sum"][:steps] })).sort_values('lambda')
+        dU_dH_df.reset_index(drop=True,inplace=True)
+        dU_dH_df.index.names = ['time']
+        dU_dH_df.set_index(['lambda'], append=True,inplace=True)
+        dHdl=dU_dH_df
 
-            # sort by state so that rows from same state are in contiguous blocks,
-            # and adjacent states are next to each other
-            dHdl = dHdl.sort_index(level=dHdl.index.names[1:])
+        # sort by state so that rows from same state are in contiguous blocks,
+        # and adjacent states are next to each other
+        dHdl = dHdl.sort_index(level=dHdl.index.names[1:])
 
-            # obtain the mean and variance of the mean for each state
-            # variance calculation assumes no correlation between points
-            # used to calculate mean
-            means = dHdl.mean(level=dHdl.index.names[1:])
-            variances = np.square(dHdl.sem(level=dHdl.index.names[1:]))
-            
-            # get the lambda names
-            l_types = dHdl.index.names[1:]
+        # obtain the mean and variance of the mean for each state
+        # variance calculation assumes no correlation between points
+        # used to calculate mean
+        means = dHdl.mean(level=dHdl.index.names[1:])
+        variances = np.square(dHdl.sem(level=dHdl.index.names[1:]))
+        
+        # get the lambda names
+        l_types = dHdl.index.names[1:]
 
-            # obtain vector of delta lambdas between each state
-            dl = means.reset_index()[means.index.names[:]].diff().iloc[1:].values
+        # obtain vector of delta lambdas between each state
+        dl = means.reset_index()[means.index.names[:]].diff().iloc[1:].values
 
-            # apply trapezoid rule to obtain DF between each adjacent state
-            deltas = (dl * (means.iloc[:-1].values + means.iloc[1:].values)/2).sum(axis=1)
+        # apply trapezoid rule to obtain DF between each adjacent state
+        deltas = (dl * (means.iloc[:-1].values + means.iloc[1:].values)/2).sum(axis=1)
 
-            # build matrix of deltas between each state
-            adelta = np.zeros((len(deltas)+1, len(deltas)+1))
-            ad_delta = np.zeros_like(adelta)
+        # build matrix of deltas between each state
+        adelta = np.zeros((len(deltas)+1, len(deltas)+1))
+        ad_delta = np.zeros_like(adelta)
 
-            for j in range(len(deltas)):
-                out = []
-                dout = []
-                for i in range(len(deltas) - j):
-                    out.append(deltas[i] + deltas[i+1:i+j+1].sum())
+        for j in range(len(deltas)):
+            out = []
+            dout = []
+            for i in range(len(deltas) - j):
+                out.append(deltas[i] + deltas[i+1:i+j+1].sum())
 
-                    # Define additional zero lambda
-                    a = [0.0] * len(l_types)
+                # Define additional zero lambda
+                a = [0.0] * len(l_types)
 
-                    # Define dl series' with additional zero lambda on the left and right
-                    dll = np.insert(dl[i:i + j + 1], 0, [a], axis=0)
-                    dlr = np.append(dl[i:i + j + 1], [a], axis=0)
+                # Define dl series' with additional zero lambda on the left and right
+                dll = np.insert(dl[i:i + j + 1], 0, [a], axis=0)
+                dlr = np.append(dl[i:i + j + 1], [a], axis=0)
 
-                    # Get a series of the form: x1, x1 + x2, ..., x(n-1) + x(n), x(n)
-                    dllr = dll + dlr
+                # Get a series of the form: x1, x1 + x2, ..., x(n-1) + x(n), x(n)
+                dllr = dll + dlr
 
-                    # Append deviation of free energy difference between state i and i+j+1
-                    dout.append((dllr ** 2 * variances.iloc[i:i + j + 2].values / 4).sum(axis=1).sum())
-                adelta += np.diagflat(np.array(out), k=j+1)
-                ad_delta += np.diagflat(np.array(dout), k=j+1)
+                # Append deviation of free energy difference between state i and i+j+1
+                dout.append((dllr ** 2 * variances.iloc[i:i + j + 2].values / 4).sum(axis=1).sum())
+            adelta += np.diagflat(np.array(out), k=j+1)
+            ad_delta += np.diagflat(np.array(dout), k=j+1)
 
-            # yield standard delta_f_ free energies between each state
-            delta_f_ = pd.DataFrame(adelta - adelta.T,
-                                        columns=means.index.values,
-                                        index=means.index.values)
+        # yield standard delta_f_ free energies between each state
+        delta_f_ = pd.DataFrame(adelta - adelta.T,
+                                    columns=means.index.values,
+                                    index=means.index.values)
 
-            # yield standard deviation d_delta_f_ between each state
-            d_delta_f_ = pd.DataFrame(np.sqrt(ad_delta + ad_delta.T),
-                                        columns=variances.index.values,
-                                        index=variances.index.values)
-            states_ = means.index.values.tolist()
-            TI=( delta_f_.loc[0.00, 1.00])
-            return TI
+        # yield standard deviation d_delta_f_ between each state
+        d_delta_f_ = pd.DataFrame(np.sqrt(ad_delta + ad_delta.T),
+                                    columns=variances.index.values,
+                                    index=variances.index.values)
+        states_ = means.index.values.tolist()
+        TI=( delta_f_.loc[0.00, 1.00])
+        return delta_f_, TI
 
 
     def Create_df_BAR_MBAR(State_A_df, State_B_df):
@@ -251,7 +251,7 @@ class Estimators():
         u_nk_df.dropna(axis=0,inplace=True)
         return u_nk_df
 
-    def Convergence(df,Estimator,StepsChunk_Int,ReplicatiesCount_Int,EnergyOutputInterval_Int):
+    def Convergence(df1,df2,Estimator,StepsChunk_Int,ReplicatiesCount_Int,EnergyOutputInterval_Int):
                                         # the last and first steps are not included in the reading
         """
         Convergence analysis
@@ -289,9 +289,16 @@ class Estimators():
         
         >>> Convergence(dEs,TI,10000,3,10)        
         """
-        Zwanzig_Final_Lst=[Estimator(df,steps_limit)[1] for steps_limit in range((StepsChunk_Int-2)*ReplicatiesCount_Int,len(df)+1,StepsChunk_Int*ReplicatiesCount_Int)]
-        StepsChunk_Lst=[EnergyOutputInterval_Int*steps_limit/ReplicatiesCount_Int for steps_limit in range((StepsChunk_Int-2)*ReplicatiesCount_Int,len(df)+1,StepsChunk_Int*ReplicatiesCount_Int)]
-        Convergence_df=pd.DataFrame({'Number of Steps':StepsChunk_Lst, 'dG':Zwanzig_Final_Lst })
+        if df2 ==None :
+
+            dGs_Lst=[Estimator(df1,steps_limit)[1] for steps_limit in range((StepsChunk_Int-2)*ReplicatiesCount_Int,len(df1)+1,StepsChunk_Int*ReplicatiesCount_Int)]
+        
+        else:
+            dGs_Lst=[Estimator(df1,df2,steps_limit)[1] for steps_limit in range((StepsChunk_Int-2)*ReplicatiesCount_Int,len(df1)+1,StepsChunk_Int*ReplicatiesCount_Int)]
+
+            
+        StepsChunk_Lst=[EnergyOutputInterval_Int*steps_limit/ReplicatiesCount_Int for steps_limit in range((StepsChunk_Int-2)*ReplicatiesCount_Int,len(df1)+1,StepsChunk_Int*ReplicatiesCount_Int)]
+        Convergence_df=pd.DataFrame({'Number of Steps':StepsChunk_Lst, 'dG':dGs_Lst })
         return Convergence_df
 
 

@@ -46,7 +46,7 @@ def main():
         #dU_dH_df=estimators.Estimators.Create_df_TI(State_A_df, State_B_df)
         print
         #Zwanzig_dG = DG_df['dG_Average'].iloc[-1]
-        TI_dG = estimators.Estimators.TI(State_A_df, State_B_df,None)
+        TI_dG = estimators.Estimators.TI(State_A_df, State_B_df,None)[1]
         print("ZW: ",Zwanzig_dG)
         print("TI: ", TI_dG)
         u_nk_df= estimators.Estimators.Create_df_BAR_MBAR(State_A_df, State_B_df)
@@ -61,12 +61,12 @@ def main():
     if args.convergence_analysis is not None:
         args.convergence_analysis=args.convergence_analysis[0].split(',')
 
-        convergenc_Zwanzig = estimators.Estimators.Convergence(dEs,estimators.Estimators.Zwanzig, int(args.convergence_analysis[1]), int(args.convergence_analysis[2]), int(args.convergence_analysis[3]))
+        convergenc_Zwanzig = estimators.Estimators.Convergence(dEs,None,estimators.Estimators.Zwanzig, int(args.convergence_analysis[1]), int(args.convergence_analysis[2]), int(args.convergence_analysis[3]))
         print(convergenc_Zwanzig)
         
-        # convergenc_TI = estimators.Estimators.Convergence(dEs,estimators.Estimators.TI, int(args.convergence_analysis[1]), int(args.convergence_analysis[2]), int(args.convergence_analysis[3]))
-        # print(convergenc_Zwanzig)
-        # plots.plotting.Plot_Convergence(convergenc_Zwanzig)
+        convergenc_TI = estimators.Estimators.Convergence(State_A_df, State_B_df,estimators.Estimators.TI, int(args.convergence_analysis[1]), int(args.convergence_analysis[2]), int(args.convergence_analysis[3]))
+        print(convergenc_TI)
+        plots.plotting.Plot_Convergence(convergenc_Zwanzig)
 
     if args.plot ==True:
 
