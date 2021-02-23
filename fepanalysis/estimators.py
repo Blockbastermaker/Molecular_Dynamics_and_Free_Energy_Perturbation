@@ -313,7 +313,7 @@ class Estimators():
             dGs_Lst=[Estimator(df1,df2,steps_limit)[1] for steps_limit in range((StepsChunk_Int-2)*ReplicatiesCount_Int,len(df1)+1,StepsChunk_Int*ReplicatiesCount_Int)]
         
         else:
-
+            print(df1)
             dGs_Lst=[Estimator(df1,steps_limit)[1] for steps_limit in range((StepsChunk_Int-2)*ReplicatiesCount_Int,int((len(df1)/len(df1['Lambda'].unique())))+1,StepsChunk_Int*ReplicatiesCount_Int)]
         
 
