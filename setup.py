@@ -24,7 +24,7 @@ setup(name='fepanalysis',
       packages=find_packages(),
       install_requires=[
           'markdown','numpy',"seaborn==0.10.0","pymbar","scikit-learn"#'0.24.1'
-      ],
+      ] ,
       entry_points={
           'console_scripts': ['fepanalysis=fepanalysis.feptool:main'],
       },
