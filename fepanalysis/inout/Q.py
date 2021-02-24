@@ -395,6 +395,5 @@ def parser(args):
 
         # dEs = dE.dE_Calculation(State_A_df, State_B_df)
         # dEs2=dE.dEs_matrix(State_A_df, State_B_df)
-        dEs2.to_csv('dEs_matrix2.csv', index=True) 
     return dEs, State_A_df, State_B_df
 
