@@ -260,7 +260,7 @@ class plotting:
         """
         
         
-        df=dES
+        df=dEs
 
         f, axis = plt.subplots(int(len(df.columns)), int(len(df.columns)), figsize=(15, 15))
         for window1 in range(len(df.columns)):
