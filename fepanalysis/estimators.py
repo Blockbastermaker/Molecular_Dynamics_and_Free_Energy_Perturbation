@@ -269,6 +269,33 @@ class Estimators():
         u_nk_df.dropna(axis=0,inplace=True)
         return u_nk_df
 
+
+    def Create_df_BAR_MBAR_2(State_A_Energies_df,States_dicts,steps):
+        
+        time = [i for i in range(len(State_A_Energies_df))]
+        lambdas_df=[i for i in State_A_Energies_df.columns]
+
+        for x in States_dicts.keys():
+            for i in range(len(States_dicts[x])):
+                States_dicts[x][i]=States_dicts[x][i][:steps]
+                
+        for i in range(len(States_dicts)):
+            States_dicts[i]=list(itertools.chain(*States_dicts[i]))
+        u_nk_df=pd.DataFrame.from_dict(States_dicts)
+        u_nk_df.columns=lambdas_list_A
+        lambdas_df=lambdas_df*len(State_A_Energies_df.iloc[:steps])
+        lambdas_df.sort()
+        u_nk_df['time']=time[:steps]*len(State_A_Energies_df.columns)
+        u_nk_df['fep-lambda']=lambdas_df
+        u_nk_df=u_nk_df.astype('float')
+        u_nk_df.set_index(['time'] ,append=False,inplace=True)
+        u_nk_df.set_index(['fep-lambda'], append=True,inplace=True)
+        u_nk_df.columns= dEx.columns.astype('float')
+        u_nk_df.dropna(axis=0,inplace=True)
+        return u_nk_df
+
+
+
     def Convergence(df1,df2,Estimator,StepsChunk_Int,ReplicatiesCount_Int,EnergyOutputInterval_Int):
                                         # the last and first steps are not included in the reading
         """
@@ -308,7 +335,6 @@ class Estimators():
         >>> Convergence(dEs,TI,10000,3,10)        
         """
         if isinstance(df2, pd.DataFrame):
-            print('@@@@@@@@@@',int((len(df1)/len(df1['Lambda'].unique())))+1)
             dGs_Lst=[Estimator(df1,df2,steps_limit)[1] for steps_limit in range((StepsChunk_Int-2)*ReplicatiesCount_Int,int((len(df1)/len(df1['Lambda'].unique())))+1,StepsChunk_Int*ReplicatiesCount_Int)]
             StepsChunk_Lst=[EnergyOutputInterval_Int*steps_limit/ReplicatiesCount_Int for steps_limit in range((StepsChunk_Int-2)*ReplicatiesCount_Int,int((len(df1)/len(df1['Lambda'].unique())))+1,StepsChunk_Int*ReplicatiesCount_Int)]
 
