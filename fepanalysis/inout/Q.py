@@ -322,7 +322,7 @@ class dE():
 
         return (dEs)    
     
-    def dEs_matrix(State_A_Lambda,State_B_Lambda):
+    def dEs_matrix(State_A_df,State_B_df):
         dEs_matrix=pd.DataFrame()
         Energies_df=(pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"State_A_G":State_A_df["Q_sum"] ,"State_B_Lambda":State_B_df["Lambda"],"State_B_G":State_B_df["Q_sum"],"E":State_B_df["Q_sum"] - State_A_df["Q_sum"] })).sort_values('State_A_Lambda')
 
