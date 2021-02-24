@@ -75,6 +75,7 @@ def main():
         plots.plotting.Plot_PDF(State_A_df, State_B_df) 
         plots.plotting.Plot_PDF_Matrix(State_A_df, State_B_df)    
         plots.plotting.Plot_PDF2(dEs)
+        plots.plotting.Plot_PDF_Matrix2(dEs)  
 if __name__ == "__main__":
 
     main()
