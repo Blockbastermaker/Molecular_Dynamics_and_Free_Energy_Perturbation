@@ -202,7 +202,7 @@ class plotting:
         plotting.Generate_PDF(df,axis,-1,'red',-2,'gray')
         [axis[i].set_xlabel('U (Kcal/mol)',fontsize=18) for i in [-1,-2] ]
         plt.suptitle('Probability Density Function of dEs', fontsize=20)
-        plt.savefig('PDF.png',dpi=300)
+        plt.savefig('PDF_dE.png',dpi=300)
         plt.close()
 
 
@@ -241,4 +241,40 @@ class plotting:
         [axis[-1,-i].set_xlabel('U (Kcal/mol)',fontsize=5) for i in range(int(len(df.columns))) ]
         plt.suptitle('Probability Density Function Matrix', fontsize=25)
         plt.savefig('PDF_Matrix.png',dpi=300)
+        plt.close()
+
+
+    def Plot_PDF_Matrix2(dEs):
+        """
+        Generate Probability Density Function matrix plot for the energies between all lambda states.
+        
+        Parameters
+        ----------
+        State_A_df : Pandas DataFrame for state A energies
+        State_B_df : Pandas DataFrame for state B energies
+        ----------
+        Returns
+        ----------
+        PDF_Matrix.png : Plot
+        
+        """
+        
+        
+        df=dES
+
+        f, axis = plt.subplots(int(len(df.columns)), int(len(df.columns)), figsize=(15, 15))
+        for window1 in range(len(df.columns)):
+            for window2 in range(len(df.columns)):
+                if window1==window2: color1, color2='blue','blue'
+                else: color1 ,color2='gray','orange'
+                sns.distplot(df.iloc[:,window1].values , hist = False, kde = True,color=color1,
+                    kde_kws = {'shade': True,'alpha':0.4},label=df.columns[window1], ax=axis[window1,window2])
+                sns.distplot( df.iloc[:,window2].values , hist = False, kde = True,color=color2,
+                    kde_kws = {'shade': True,'alpha':0.4},label=df.columns[window2], ax=axis[window1,window2])
+                axis[window1,window2].legend(loc='upper right',prop={'size':4})
+                axis[window1,window2].tick_params(labelsize=5)
+                plt.subplots_adjust(wspace=0.5,hspace = 0.5)
+        [axis[-1,-i].set_xlabel('U (Kcal/mol)',fontsize=5) for i in range(int(len(df.columns))) ]
+        plt.suptitle('Probability Density Function Matrix', fontsize=25)
+        plt.savefig('PDF_Matrix_dEs.png',dpi=300)
         plt.close()
