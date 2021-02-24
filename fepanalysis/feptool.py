@@ -43,7 +43,7 @@ def main():
     if args.estimator =='Zwanzig_Estimator':
 
         DG_df, Zwanzig_dG= estimators.Estimators.Zwanzig(dEs,None)
-        estimators.Estimators.Zwanzig_matrix_AI(dEs,None)
+        #estimators.Estimators.Zwanzig_matrix_AI(dEs,None)
         #dU_dH_df=estimators.Estimators.Create_df_TI(State_A_df, State_B_df)
         #Zwanzig_dG = DG_df['dG_Average'].iloc[-1]
         TI_dG = estimators.Estimators.TI(State_A_df, State_B_df,None)[1]
