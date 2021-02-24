@@ -239,6 +239,7 @@ class Estimators():
         time= [i for i in range(len(State_A_Energies_df))]
         lambdas_df=[i for i in State_A_Energies_df.columns]
         States={i:[] for i in range(len(lambdas_list_A))}
+        States_dicts={i:[] for i in range(len(lambdas_list_A))}
         for i in range(len(State_A_Energies_df.columns)):
             State_A_Energies=State_A_Energies_df.iloc[:,[i]]
             State_A_Energies.columns=["0"]
@@ -253,9 +254,9 @@ class Estimators():
                 dE=E1-E0
                 dE=dE.values.tolist()
                 dE=list(itertools.chain(*dE))
-                States[i].append(dE)
-        for i in range(len(States)):
-            States[i]=list(itertools.chain(*States[i]))
+                States_dicts[i].append(dE)
+        for i in range(len(States_dicts)):
+            States[i]=list(itertools.chain(*States_dicts[i]))
         u_nk_df=pd.DataFrame.from_dict(States)
         u_nk_df.columns=lambdas_list_A
         lambdas_df=lambdas_df*len(State_A_Energies_df)
@@ -267,7 +268,7 @@ class Estimators():
         u_nk_df.set_index(['fep-lambda'], append=True,inplace=True)
         u_nk_df.columns= u_nk_df.columns.astype('float')
         u_nk_df.dropna(axis=0,inplace=True)
-        return u_nk_df
+        return u_nk_df,States_dicts
 
 
     def Create_df_BAR_MBAR_2(State_A_Energies_df,States_dicts,steps):
