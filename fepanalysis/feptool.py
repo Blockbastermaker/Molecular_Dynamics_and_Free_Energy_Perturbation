@@ -48,9 +48,9 @@ def main():
         TI_dG = estimators.Estimators.TI(State_A_df, State_B_df,None)[1]
         print("ZW: ",Zwanzig_dG)
         print("TI: ", TI_dG)
-        # u_nk_df= estimators.Estimators.Create_df_BAR_MBAR(State_A_df, State_B_df)
-        # BAR_df= estimators.BAR().fit(u_nk_df)
-        # print('BAR: ',BAR_df.delta_f_.loc[0.00, 1.00])
+        u_nk_df= estimators.Estimators.Create_df_BAR_MBAR(State_A_df, State_B_df)
+        BAR_df= estimators.BAR().fit(u_nk_df)
+        print('BAR: ',BAR_df.delta_f_.loc[0.00, 1.00])
         
         # from pymbar import MBAR as MBAR_
         # from alchemlyb.estimators import MBAR
