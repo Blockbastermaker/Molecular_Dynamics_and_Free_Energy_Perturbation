@@ -178,6 +178,34 @@ class plotting:
         plt.close()
 
 
+    def Plot_PDF2(dEs):
+        """
+        Plot the Probability Density Function plot for the energies between two adjacent lambda states.
+        
+        Parameters
+        ----------
+        State_A_df : Pandas DataFrame for state A energies
+        State_B_df : Pandas DataFrame for state B energies
+        ----------
+        Returns
+        ----------
+        PDF.png : Plot
+        
+        """
+        df=dEs
+        f, axis = plt.subplots(int(len(df.columns)/2), 2, figsize=(10, 10))
+        plt.subplots_adjust(wspace=0.2,hspace = 0.5)
+        axis = axis.flatten()
+        for i in range(1,len(df.columns[:-1])-1):
+            plotting.Generate_PDF(df,axis,i,'orange',i+1 ,'gray')
+        plotting.Generate_PDF(df,axis,0,'blue',1,'gray')
+        plotting.Generate_PDF(df,axis,-1,'red',-2,'gray')
+        [axis[i].set_xlabel('U (Kcal/mol)',fontsize=18) for i in [-1,-2] ]
+        plt.suptitle('Probability Density Function of dEs', fontsize=20)
+        plt.savefig('PDF.png',dpi=300)
+        plt.close()
+
+
     def Plot_PDF_Matrix(State_A_df, State_B_df):
         """
         Generate Probability Density Function matrix plot for the energies between all lambda states.

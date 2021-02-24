@@ -271,7 +271,9 @@ class Estimators():
         return u_nk_df,States_dicts
 
 
-    def Create_df_BAR_MBAR_2(State_A_Energies_df,States_dicts,steps):
+
+
+    def Create_df_BAR_MBAR_2(States_dicts,State_A_Energies_df,steps):
         
         time = [i for i in range(len(State_A_Energies_df))]
         lambdas_df=[i for i in State_A_Energies_df.columns]
@@ -293,9 +295,10 @@ class Estimators():
         u_nk_df.set_index(['fep-lambda'], append=True,inplace=True)
         u_nk_df.columns= dEx.columns.astype('float')
         u_nk_df.dropna(axis=0,inplace=True)
-        return u_nk_df
-
-
+    
+        BAR_dfEstimators.BAR().fit(u_nk_df)
+        BAR_dG = BAR_df.delta_f_.loc[0.00, 1.00]
+        return BAR_dG
 
     def Convergence(df1,df2,Estimator,StepsChunk_Int,ReplicatiesCount_Int,EnergyOutputInterval_Int):
                                         # the last and first steps are not included in the reading

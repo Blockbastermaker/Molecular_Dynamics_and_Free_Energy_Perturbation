@@ -172,8 +172,11 @@ def dE_Calculation3():
         State_B_Lambda_float=State_B_Energies_df.iloc[:,[i,i+1]].columns
         
         E0=State_A_Energies*State_A_Lambda_float+State_B_Energies*State_B_Lambda_float
+        print('A',State_A_Energies,State_A_Lambda_float,'B',State_B_Energies,State_B_Lambda_float)
         E1=State_A_Energies*State_A_Lambda_float[::-1]+State_B_Energies*State_B_Lambda_float[::-1]
+        print('A',State_A_Energies,State_A_Lambda_float[::-1],'B',State_B_Energies*State_B_Lambda_float[::-1])
         dE=E1-E0
+        print('dE:::',dE)
         dE.columns=[str(State_A_Lambda_float.values[0])+"_"+str(State_B_Lambda_float.values[0])+"-"+str(State_A_Lambda_float.values[1])+"_"+str(State_B_Lambda_float.values[1]),str(State_A_Lambda_float.values[1])+"_"+str(State_B_Lambda_float.values[1])+"-"+str(State_A_Lambda_float.values[0])+"_"+str(State_B_Lambda_float.values[0])]
         dEs=pd.concat([dEs,dE],axis=1, sort=False)
     return dEs
