@@ -359,7 +359,7 @@ class dE():
         # dEs_matrix['State A']=[(re.split('_|-',i)[0]) for i in dEs_matrix.index.values]
         # dEs_matrix['State B']=[(re.split('_|-',i)[1]) for i in dEs_matrix.index.values]
         dEs_matrix.to_csv('dEs_matrix.csv', index=True)    
-
+        return dEs_matrix
 def parser(args):
 
     if args.all_replicaties==True:
@@ -394,6 +394,7 @@ def parser(args):
         State_B_df = Binary.createDataFrames(State_B_RawEnergies_Lst)
 
         dEs = dE.dE_Calculation(State_A_df, State_B_df)
-
+        dEs2=dE.dEs_matrix(State_A_df, State_B_df)
+        dEs2.to_csv('dEs_matrix2.csv', index=True) 
     return dEs, State_A_df, State_B_df
 
