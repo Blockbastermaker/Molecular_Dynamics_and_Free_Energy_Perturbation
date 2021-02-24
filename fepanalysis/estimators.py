@@ -308,7 +308,7 @@ class Estimators():
         >>> Convergence(dEs,TI,10000,3,10)        
         """
         if isinstance(df2, pd.DataFrame):
-
+            print('@@@@@@@@@@',int((len(df1)/len(df1['Lambda'].unique())))+1)
             dGs_Lst=[Estimator(df1,df2,steps_limit)[1] for steps_limit in range((StepsChunk_Int-2)*ReplicatiesCount_Int,int((len(df1)/len(df1['Lambda'].unique())))+1,StepsChunk_Int*ReplicatiesCount_Int)]
             StepsChunk_Lst=[EnergyOutputInterval_Int*steps_limit/ReplicatiesCount_Int for steps_limit in range((StepsChunk_Int-2)*ReplicatiesCount_Int,int((len(df1)/len(df1['Lambda'].unique())))+1,StepsChunk_Int*ReplicatiesCount_Int)]
 
