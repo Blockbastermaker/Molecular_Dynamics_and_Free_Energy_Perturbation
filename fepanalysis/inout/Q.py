@@ -322,7 +322,43 @@ class dE():
 
         return (dEs)    
     
-    
+    def dEs_matrix(State_A_Lambda,State_B_Lambda):
+        dEs_matrix=pd.DataFrame()
+        Energies_df=(pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"State_A_G":State_A_df["Q_sum"] ,"State_B_Lambda":State_B_df["Lambda"],"State_B_G":State_B_df["Q_sum"],"E":State_B_df["Q_sum"] - State_A_df["Q_sum"] })).sort_values('State_A_Lambda')
+
+        State_A_Energies_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('State_A_Lambda',sort=False)['State_A_G'].apply(list)),orient='index')
+        State_A_Energies_df=State_A_Energies_df.transpose()
+        State_B_Energies_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('State_B_Lambda',sort=False)['State_B_G'].apply(list)),orient="index") 
+        State_B_Energies_df=State_B_Energies_df.transpose()
+        lambdas_list_A=list(State_A_Energies_df.columns)
+        lambdas_list_B=list(State_B_Energies_df.columns)
+
+        time= [i for i in range(len(State_A_Energies_df))]
+        lambdas_df=[i for i in State_A_Energies_df.columns]
+        States={i:[] for i in range(len(lambdas_list_A))}
+        for i in range(len(State_A_Energies_df.columns)):
+            State_A_Energies=State_A_Energies_df.iloc[:,[i]]
+            State_A_Energies.columns=["0"]
+            State_A_Lambda_float=State_A_Energies_df.columns[i]    
+            
+            State_B_Energies=State_B_Energies_df.iloc[:,[i]]
+            State_B_Energies.columns=["0"]
+            State_B_Lambda_float=State_B_Energies_df.columns[i]    
+            E0=State_A_Energies*State_A_Lambda_float+State_B_Energies*State_B_Lambda_float
+            for x in range(len(lambdas_list_A)):
+                #print(State_A_Energies,State_B_Energies)
+                #print("A: ",State_A_Lambda_float,'B:',State_B_Lambda_float,'X:' ,lambdas_list_A[x], 'X+1',lambdas_list_B[x])
+                E1=State_A_Energies*lambdas_list_A[x]+State_B_Energies*lambdas_list_B[x]
+                dE=E1-E0
+                dE.columns=[str(State_A_Lambda_float)+"_"+str(lambdas_list_A[x])]
+                dEs_matrix=pd.concat([dEs_matrix,dE],axis=1, sort=False)
+        dEs_matrix= dEs_matrix.astype('float')
+        # df = dEs_matrix.replace(0.0, np.nan)
+        # df = df.dropna(how='all', axis=1)
+        dEs_matrix=dEs_matrix.transpose()
+        # dEs_matrix['State A']=[(re.split('_|-',i)[0]) for i in dEs_matrix.index.values]
+        # dEs_matrix['State B']=[(re.split('_|-',i)[1]) for i in dEs_matrix.index.values]
+        dEs_matrix.to_csv('dEs_matrix.csv', index=True)    
 
 def parser(args):
 
@@ -360,3 +396,4 @@ def parser(args):
         dEs = dE.dE_Calculation(State_A_df, State_B_df)
 
     return dEs, State_A_df, State_B_df
+

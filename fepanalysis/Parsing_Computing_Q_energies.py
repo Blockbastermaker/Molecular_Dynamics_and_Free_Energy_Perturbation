@@ -172,11 +172,8 @@ def dE_Calculation3():
         State_B_Lambda_float=State_B_Energies_df.iloc[:,[i,i+1]].columns
         
         E0=State_A_Energies*State_A_Lambda_float+State_B_Energies*State_B_Lambda_float
-        print('A',State_A_Energies,State_A_Lambda_float,'B',State_B_Energies,State_B_Lambda_float)
         E1=State_A_Energies*State_A_Lambda_float[::-1]+State_B_Energies*State_B_Lambda_float[::-1]
-        print('A',State_A_Energies,State_A_Lambda_float[::-1],'B',State_B_Energies*State_B_Lambda_float[::-1])
         dE=E1-E0
-        print('dE:::',dE)
         dE.columns=[str(State_A_Lambda_float.values[0])+"_"+str(State_B_Lambda_float.values[0])+"-"+str(State_A_Lambda_float.values[1])+"_"+str(State_B_Lambda_float.values[1]),str(State_A_Lambda_float.values[1])+"_"+str(State_B_Lambda_float.values[1])+"-"+str(State_A_Lambda_float.values[0])+"_"+str(State_B_Lambda_float.values[0])]
         dEs=pd.concat([dEs,dE],axis=1, sort=False)
     return dEs
@@ -498,7 +495,7 @@ pd.merge(dEs_ready, dfw, how="outer")
 dEs_ready.append( dEs_ready_R)
 del df1[0.0]
 #%%
-#dEs matrix
+#dEs matrix reday!!!!!!!
 #def dE_Calculation3():
 Energies_df=(pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"State_A_G":State_A_df["Q_sum"] ,"State_B_Lambda":State_B_df["Lambda"],"State_B_G":State_B_df["Q_sum"],"E":State_B_df["Q_sum"] - State_A_df["Q_sum"] })).sort_values('State_A_Lambda')
 
@@ -587,56 +584,8 @@ def Create_df_BAR_MBAR_2(State_A_Energies_df,States_dicts,steps):
 
 
 #%%
-eval(df_1.0)
-
-
-dEs_F.index=dEs_F.index.astype(float)
-dEs_F.index.names = ['time']
-dEs_F.set_index(['fep-lambda'], append=True,inplace=True)
-dEs_F.replace(np.nan, 0, inplace=True)
-dEs_F = dEs_F.reindex(sorted(dEs_F.columns), axis=1)
-
-
-
-
-for i in range(len(State_A_Energies_df.columns)):
-    State_A_Energies=State_A_Energies_df.iloc[:,[-i]]
-    State_A_Energies.columns=["0"]
-    State_A_Lambda_float=State_A_Energies_df.iloc[:,[-i]].columns
-    
-    State_B_Energies=State_B_Energies_df.iloc[:,[-i]]
-    State_B_Energies.columns=["0"]
-    State_B_Lambda_float=State_B_Energies_df.iloc[:,[-i]].columns
-    E0=State_A_Energies*State_A_Lambda_float+State_B_Energies*State_B_Lambda_float
-    for x in lambdas_list:
-        E1=State_A_Energies*x+State_B_Energies*x
-        dE=E1-E0
-        print(x)
-        dE.columns=[State_A_Lambda_float]
-        dE['fep-lambda']=x
-        dEs_R=dEs_R.append(dE, ignore_index=True)
-    #return dEs
-
-
-
-
-
-
-
-
-dfdU=State_A_Energies_df
-dfdUb=State_B_Energies_df
-
-dicts0={}
-chunks=[]
-for i  in range(len(dfdU.columns)):
-    for g in range(len(dfdU.columns)):
-        na= str(float(dfdU.columns[g])/1000)
-        dicts0[na]=(list(dfdU.iloc[:, i]-dfdUb.iloc[:, g]))
-    chunks.append(pd.DataFrame(dicts0))
-
-dfdU2 = pd.concat(chunks, ignore_index=False)
-
+ds=dEx
+ds.transpose()
 
 
 
@@ -699,7 +648,6 @@ dEs_ready.index=dEs_ready.index.astype(float)
 dEs_ready.index.names = ['time']
 dEs_ready.set_index(['fep-lambda'], append=True,inplace=True)
 dEs_ready.columns=dEs_ready.columns.astype(float)
-dEs= dEs*-0.592
 dEs
 
 
@@ -1005,25 +953,87 @@ mbar_vdw.delta_f_.loc[0.00, 1.00]
 
 # %%
 
-    if step != None:
-        Energies_df=(pd.DataFrame({"lambda":State_A_df["Lambda"],"fep":State_B_df["Q_sum"] - State_A_df["Q_sum"] })).sort_values('lambda')
-        Energies_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('lambda',sort=False)['fep'].apply(list)),orient='index')
-        Energies_df=Energies_df.transpose()
-        Energies_df=Energies_df.iloc[:steps]
 
-        dfl=pd.DataFrame(columns=['lambda','fep'])
-        dU_dH_df=pd.DataFrame(columns=['lambda','fep'])
-        for state in range (len(Energies_df.columns)):
-                dfl=pd.DataFrame(columns=['lambda','fep'])
-                print (col)
-                dfl['fep']=x.iloc[:,state]
-                dfl['lambda']=x.columns.values[state]
-                dU_dH_df=dU_dH_df.append(dfl)
-    else:
-        dU_dH_df=(pd.DataFrame({"lambda":State_A_df["Lambda"],"fep":State_B_df["Q_sum"] - State_A_df["Q_sum"] })).sort_values('lambda')
-    
-    dU_dH_df.reset_index(drop=True,inplace=True)
-    dU_dH_df.index.names = ['time']
-    dU_dH_df.set_index(['lambda'], append=True,inplace=True)
 # %%
-len(State_A_df)/len(df1['Lambda'].unique())
+def dEs_matrix(State_A_Lambda,State_B_Lambda):
+    dEs_matrix=pd.DataFrame()
+    Energies_df=(pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"State_A_G":State_A_df["Q_sum"] ,"State_B_Lambda":State_B_df["Lambda"],"State_B_G":State_B_df["Q_sum"],"E":State_B_df["Q_sum"] - State_A_df["Q_sum"] })).sort_values('State_A_Lambda')
+
+    State_A_Energies_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('State_A_Lambda',sort=False)['State_A_G'].apply(list)),orient='index')
+    State_A_Energies_df=State_A_Energies_df.transpose()
+    State_B_Energies_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('State_B_Lambda',sort=False)['State_B_G'].apply(list)),orient="index") 
+    State_B_Energies_df=State_B_Energies_df.transpose()
+    lambdas_list_A=list(State_A_Energies_df.columns)
+    lambdas_list_B=list(State_B_Energies_df.columns)
+
+    time= [i for i in range(len(State_A_Energies_df))]
+    lambdas_df=[i for i in State_A_Energies_df.columns]
+    States={i:[] for i in range(len(lambdas_list_A))}
+    for i in range(len(State_A_Energies_df.columns)):
+        State_A_Energies=State_A_Energies_df.iloc[:,[i]]
+        State_A_Energies.columns=["0"]
+        State_A_Lambda_float=State_A_Energies_df.columns[i]    
+        
+        State_B_Energies=State_B_Energies_df.iloc[:,[i]]
+        State_B_Energies.columns=["0"]
+        State_B_Lambda_float=State_B_Energies_df.columns[i]    
+        E0=State_A_Energies*State_A_Lambda_float+State_B_Energies*State_B_Lambda_float
+        for x in range(len(lambdas_list_A)):
+            #print(State_A_Energies,State_B_Energies)
+            #print("A: ",State_A_Lambda_float,'B:',State_B_Lambda_float,'X:' ,lambdas_list_A[x], 'X+1',lambdas_list_B[x])
+            E1=State_A_Energies*lambdas_list_A[x]+State_B_Energies*lambdas_list_B[x]
+            dE=E1-E0
+            dE.columns=[str(State_A_Lambda_float)+"_"+str(lambdas_list_A[x])]
+            dEs_matrix=pd.concat([dEs_matrix,dE],axis=1, sort=False)
+    dEs_matrix= dEs_matrix.astype('float')
+    # df = dEs_matrix.replace(0.0, np.nan)
+    # df = df.dropna(how='all', axis=1)
+    dEs_matrix=dEs_matrix.transpose()
+    # dEs_matrix['State A']=[(re.split('_|-',i)[0]) for i in dEs_matrix.index.values]
+    # dEs_matrix['State B']=[(re.split('_|-',i)[1]) for i in dEs_matrix.index.values]
+    dEs_matrix.to_csv('dEs_matrix.csv', index=True)
+# %%
+
+
+# %%
+    ###for dE matrix AI
+def Zwanzig_matrix_AI(dEs,steps)
+    dEs_df=pd.DataFrame(-0.592*np.log(np.mean(np.exp(-dEs.iloc[:None]/0.592))))
+    Lambdas_F=[]
+    Lambdas_R=[]
+    Lambdas=[]
+    dGF=[]
+    dGF_sum=[]
+    dGR=[]
+    dGR_sum=[]
+    dG_Average=[]
+    dGR.append(0.0)
+    dG_Average.append(0.0)
+    Lambdas_F.append((re.split('_|-',dEs_df.index[-1])[0])+'_'+(re.split('_|-',dEs_df.index[-1])[0]))
+    for i in range(1,len(dEs_df.index),2):
+        Lambdas.append(re.split('_|-',dEs_df.index[i-1])[1])
+        Lambdas_R.append((re.split('_|-',dEs_df.index[i])[1])+'_'+(re.split('_|-',dEs_df.index[i])[3]))
+        Lambdas_F.append((re.split('_|-',dEs_df.index[i-1])[1])+'_'+(re.split('_|-',dEs_df.index[i-1])[3]))
+        dGF.append(dEs_df.iloc[i,0])
+        dGR.append(dEs_df.iloc[i-1,0])
+    Lambdas_R.append((re.split('_|-',dEs_df.index[-1])[1])+'_'+(re.split('_|-',dEs_df.index[-1])[1]))
+    Lambdas.append(re.split('_|-',dEs_df.index[-1])[1])
+    dGF.append(0.0)
+    dGF=dGF[::-1]
+    for i in range(len(dGF)):
+        dGF_sum.append(sum(dGF[:i+1]))
+        dGR_sum.append(sum(dGR[:i+1]))
+
+    dG_average_raw=((pd.DataFrame(dGF[1:]))-pd.DataFrame(dGR[1:][::-1]))/2
+
+    for i in range(len(list(dG_average_raw.values))):
+        dG_Average.append(np.sum(dG_average_raw.values[:i+1]))
+
+    Zwanzig_df=pd.DataFrame.from_dict({"Lambda":Lambdas,"dG_Forward":dGF,"Lambda_F":Lambdas_F,"SUM_dG_Forward":dGF_sum,"dG_Reverse":dGR[::-1],"Lambda_R":Lambdas_R,"SUM_dG_Reverse":dGR_sum[::-1],"dG_Average":dG_Average})
+    Zwanzig_Final_dG = Zwanzig_df['dG_Average'].iloc[-1]
+    Zwanzig_df.to_csv('Zwanzig_df_lambdas_F-R.csv')
+
+# %%
+df.index.unique()
+
+# %%
