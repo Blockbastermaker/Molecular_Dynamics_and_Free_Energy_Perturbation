@@ -360,6 +360,39 @@ class dE():
         # dEs_matrix['State B']=[(re.split('_|-',i)[1]) for i in dEs_matrix.index.values]
         dEs_matrix.to_csv('dEs_matrix.csv', index=True)    
         return dEs_matrix
+
+    def Get_dEs_dGs_AI(Zwanzig_df,dEs_matrix):
+        dgf_dict = dict(zip(Zwanzig_df.Lambda_F,Zwanzig_df.dG_Forward))
+        dgr_dict = dict(zip(Zwanzig_df.Lambda_R,Zwanzig_df.dG_Reverse))
+
+        dgf_dict_matrix={}
+        for  lam, dg in dgf_dict.items():
+            for x in Zwanzig_df['Lambda'].values:
+                a=float(re.split('_',lam)[1])
+                b=float(x)
+                if a<b:
+                    print(lam, x)
+                    nf= str(b)+'_'+str(a)
+                    dgf_dict_matrix[nf]=dg
+
+        dgr_dict_matrix={}
+        for  lam, dg in dgr_dict.items():
+            for x in Zwanzig_df['Lambda'].values:
+                a=float(re.split('_',lam)[1])
+                b=float(x)
+                if a>b:
+                    print(lam, x)
+                    nr= str(b)+'_'+str(a)
+                    dgr_dict_matrix[nr]=dg
+
+        dg_matrix= dgf_dict_matrix.update(dgr_dict_matrix)
+        dg_matrix_df=pd.DataFrame.from_dict(dgf_dict_matrix,orient='index')
+        dg_matrix_df.sort_index(ascending=True,inplace=True)
+        dg_matrix_df.columns=["dG"] 
+        dEs_dGs_AI=pd.concat([dg_matrix_df, dEs_matrix], axis=1)
+        dEs_dGs_AI.to_csv('dEs_dGs_AI.csv', index=True)
+
+
 def parser(args):
 
     if args.all_replicaties==True:
@@ -394,6 +427,6 @@ def parser(args):
         State_B_df = Binary.createDataFrames(State_B_RawEnergies_Lst)
 
         dEs = dE.dE_Calculation(State_A_df, State_B_df)
-        # dEs2=dE.dEs_matrix(State_A_df, State_B_df)
-    return dEs, State_A_df, State_B_df
+        dEs2=dE.dEs_matrix(State_A_df, State_B_df)
+    return dEs, State_A_df, State_B_df,dEs2
 

@@ -10,6 +10,7 @@ import re
 import concurrent.futures
 import argparse
 from pandas.core.frame import DataFrame
+from pandas.core.reshape.concat import concat
 import seaborn as sns
 from scipy.stats import norm
 from seaborn.utils import despine
@@ -375,10 +376,10 @@ def Plot_PDF_Matrix():
 #if '__name__' == '__main__':
 
 #%%
-os.chdir("/Users/nour/New_qfep/qfep_small2") #MAC
+os.chdir("/Users/nour/New_qfep/test_long/test") #MAC
 #os.chdir("Z:/jobs/Qfep_NEW/")
 #os.chdir("G:/PhD/Project/En")
-EnergyFiles_Lst = [filename for filename in glob.glob("FEP1*.en")]  
+EnergyFiles_Lst = [filename for filename in glob.glob("FEP2*.en")]  
 State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadBinary(EnergyFiles_Lst)
 #State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadAndCollectBinariesInParallel(EnergyFiles_Lst)
 State_A_df = createDataFrames(State_A_RawEnergies_Lst)
@@ -991,14 +992,19 @@ def dEs_matrix(State_A_Lambda,State_B_Lambda):
     dEs_matrix=dEs_matrix.transpose()
     # dEs_matrix['State A']=[(re.split('_|-',i)[0]) for i in dEs_matrix.index.values]
     # dEs_matrix['State B']=[(re.split('_|-',i)[1]) for i in dEs_matrix.index.values]
+    dEs_matrix.index.unique()
+    dEs_matrix = dEs_matrix.replace(0.0, np.nan)
+    dEs_matrix = dEs_matrix.dropna(how='all', axis=0)
     dEs_matrix.to_csv('dEs_matrix.csv', index=True)
+    return dEs_matrix
 # %%
 
 
 # %%
     ###for dE matrix AI
+    #dEs=dEs_matrix
 def Zwanzig_matrix_AI(dEs,steps)
-    dEs_df=pd.DataFrame(-0.592*np.log(np.mean(np.exp(-dEs.iloc[:None]/0.592))))
+    dEs_df=pd.DataFrame(-0.592*np.log(np.mean(np.exp(-dEs.iloc[:steps]/0.592))))
     Lambdas_F=[]
     Lambdas_R=[]
     Lambdas=[]
@@ -1032,8 +1038,71 @@ def Zwanzig_matrix_AI(dEs,steps)
     Zwanzig_df=pd.DataFrame.from_dict({"Lambda":Lambdas,"dG_Forward":dGF,"Lambda_F":Lambdas_F,"SUM_dG_Forward":dGF_sum,"dG_Reverse":dGR[::-1],"Lambda_R":Lambdas_R,"SUM_dG_Reverse":dGR_sum[::-1],"dG_Average":dG_Average})
     Zwanzig_Final_dG = Zwanzig_df['dG_Average'].iloc[-1]
     Zwanzig_df.to_csv('Zwanzig_df_lambdas_F-R.csv')
+    #return Zwanzig_df2
 
 # %%
-df.index.unique()
+dEs_matrix.index.unique()
+df = dEs_matrix.replace(0.0, np.nan)
+df = df.dropna(how='all', axis=0)
+# %%
+dgf_dict = dict(zip(Zwanzig_df.Lambda_F,Zwanzig_df.dG_Forward))
+dgr_dict = dict(zip(Zwanzig_df.Lambda_R,Zwanzig_df.dG_Reverse))
 
 # %%
+dgf_dict_matrix={}
+for  lam, dg in dgf_dict.items():
+    for x in Zwanzig_df['Lambda'].values:
+        a=float(re.split('_',lam)[1])
+        b=float(x)
+        if a<b:
+            print(lam, x)
+            nf= str(b)+'_'+str(a)
+            dgf_dict_matrix[nf]=dg
+# %%
+dgr_dict_matrix={}
+for  lam, dg in dgr_dict.items():
+    for x in Zwanzig_df['Lambda'].values:
+        a=float(re.split('_',lam)[1])
+        b=float(x)
+        if a>b:
+            print(lam, x)
+            nr= str(b)+'_'+str(a)
+            dgr_dict_matrix[nr]=dg
+# %%
+dg_matrix= dgf_dict_matrix.update(dgr_dict_matrix)
+dg_matrix_df=pd.DataFrame.from_dict(dgf_dict_matrix,orient='index')
+dg_matrix_df.sort_index(ascending=True,inplace=True)
+dg_matrix_df.columns=["dG"]
+# %%
+pd.concat([dg_matrix_df, df], axis=1)
+# %%
+def Get_dEs_dGs_AI(Zwanzig_df,dEs_matrix):
+    dgf_dict = dict(zip(Zwanzig_df.Lambda_F,Zwanzig_df.dG_Forward))
+    dgr_dict = dict(zip(Zwanzig_df.Lambda_R,Zwanzig_df.dG_Reverse))
+
+    dgf_dict_matrix={}
+    for  lam, dg in dgf_dict.items():
+        for x in Zwanzig_df['Lambda'].values:
+            a=float(re.split('_',lam)[1])
+            b=float(x)
+            if a<b:
+                print(lam, x)
+                nf= str(b)+'_'+str(a)
+                dgf_dict_matrix[nf]=dg
+
+    dgr_dict_matrix={}
+    for  lam, dg in dgr_dict.items():
+        for x in Zwanzig_df['Lambda'].values:
+            a=float(re.split('_',lam)[1])
+            b=float(x)
+            if a>b:
+                print(lam, x)
+                nr= str(b)+'_'+str(a)
+                dgr_dict_matrix[nr]=dg
+
+    dg_matrix= dgf_dict_matrix.update(dgr_dict_matrix)
+    dg_matrix_df=pd.DataFrame.from_dict(dgf_dict_matrix,orient='index')
+    dg_matrix_df.sort_index(ascending=True,inplace=True)
+    dg_matrix_df.columns=["dG"] 
+    dEs_dGs_AI=pd.concat([dg_matrix_df, dEs_matrix], axis=1)
+    dEs_dGs_AI.to_csv('dEs_dGs_AI.csv', index=True)

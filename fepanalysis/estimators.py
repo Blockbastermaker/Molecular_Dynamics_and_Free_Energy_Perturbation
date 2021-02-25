@@ -388,7 +388,7 @@ class Estimators():
         Zwanzig_df=pd.DataFrame.from_dict({"Lambda":Lambdas,"dG_Forward":dGF,"Lambda_F":Lambdas_F,"SUM_dG_Forward":dGF_sum,"dG_Reverse":dGR[::-1],"Lambda_R":Lambdas_R,"SUM_dG_Reverse":dGR_sum[::-1],"dG_Average":dG_Average})
         Zwanzig_Final_dG = Zwanzig_df['dG_Average'].iloc[-1]
         Zwanzig_df.to_csv('Zwanzig_df_lambdas_F-R.csv')
-    
+        return Zwanzig_df ,Zwanzig_Final_dG
 
 
 #from pymbar import BAR as BAR_
