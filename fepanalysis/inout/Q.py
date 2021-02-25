@@ -359,7 +359,7 @@ class dE():
         dEs_matrix=dEs_matrix.transpose()
         # dEs_matrix['State A']=[(re.split('_|-',i)[0]) for i in dEs_matrix.index.values]
         # dEs_matrix['State B']=[(re.split('_|-',i)[1]) for i in dEs_matrix.index.values]
-        dEs_matrix.to_csv('dEs_matrix.csv', index=True)    
+        #dEs_matrix.to_csv('dEs_matrix.csv', index=True)    
         return dEs_matrix
 
     def Get_dEs_dGs_AI(Zwanzig_df,dEs_matrix):
