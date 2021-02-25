@@ -275,6 +275,7 @@ class Estimators():
 
     def Create_df_BAR_MBAR_2(States_dicts,State_A_Energies_df,steps):
         
+        lambdas_list_A=list(State_A_Energies_df.columns)
         time = [i for i in range(len(State_A_Energies_df))]
         lambdas_df=[i for i in State_A_Energies_df.columns]
 
