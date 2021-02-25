@@ -278,7 +278,6 @@ class Estimators():
         lambdas_list_A=list(State_A_Energies_df.columns)
         time = [i for i in range(len(State_A_Energies_df))]
         lambdas_df=lambdas_list_A
-        steps=int(steps)
         for x in States_dicts.keys():
             for i in range(len(States_dicts[x])):
                 States_dicts[x][i]=States_dicts[x][i][:steps]
