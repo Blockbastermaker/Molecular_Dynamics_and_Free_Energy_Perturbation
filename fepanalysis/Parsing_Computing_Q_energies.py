@@ -376,10 +376,10 @@ def Plot_PDF_Matrix():
 #if '__name__' == '__main__':
 
 #%%
-os.chdir("/Users/nour/New_qfep/test_long/test") #MAC
-#os.chdir("Z:/jobs/Qfep_NEW/")
+#os.chdir("/Users/nour/New_qfep/test_long/test") #MAC
+os.chdir("Z:/jobs/Qfep_NEW/qfep_small")
 #os.chdir("G:/PhD/Project/En")
-EnergyFiles_Lst = [filename for filename in glob.glob("FEP2*.en")]  
+EnergyFiles_Lst = [filename for filename in glob.glob("FEP1*.en")]  
 State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadBinary(EnergyFiles_Lst)
 #State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadAndCollectBinariesInParallel(EnergyFiles_Lst)
 State_A_df = createDataFrames(State_A_RawEnergies_Lst)
@@ -1106,3 +1106,83 @@ def Get_dEs_dGs_AI(Zwanzig_df,dEs_matrix):
     dg_matrix_df.columns=["dG"] 
     dEs_dGs_AI=pd.concat([dg_matrix_df, dEs_matrix], axis=1)
     dEs_dGs_AI.to_csv('dEs_dGs_AI.csv', index=True)
+    
+    
+#%%
+
+
+Energies_df=(pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"State_A_G":State_A_df["Q_sum"] ,"State_B_Lambda":State_B_df["Lambda"],"State_B_G":State_B_df["Q_sum"],"E":State_B_df["Q_sum"] - State_A_df["Q_sum"] })).sort_values('State_A_Lambda')
+
+State_A_Energies_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('State_A_Lambda',sort=False)['State_A_G'].apply(list)),orient='index')
+State_A_Energies_df=State_A_Energies_df.transpose()
+State_B_Energies_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('State_B_Lambda',sort=False)['State_B_G'].apply(list)),orient="index") 
+State_B_Energies_df=State_B_Energies_df.transpose()
+lambdas_list_A=list(State_A_Energies_df.columns)
+lambdas_list_B=list(State_B_Energies_df.columns)
+
+time= [i for i in range(len(State_A_Energies_df))]
+lambdas_df=[i for i in State_A_Energies_df.columns]
+States={i:[] for i in range(len(lambdas_list_A))}
+States_dicts={i:[] for i in range(len(lambdas_list_A))}
+for i in range(len(State_A_Energies_df.columns)):
+    State_A_Energies=State_A_Energies_df.iloc[:,[i]]
+    State_A_Energies.columns=["0"]
+    State_A_Lambda_float=State_A_Energies_df.columns[i]    
+    
+    State_B_Energies=State_B_Energies_df.iloc[:,[i]]
+    State_B_Energies.columns=["0"]
+    State_B_Lambda_float=State_B_Energies_df.columns[i]    
+    E0=State_A_Energies*State_A_Lambda_float+State_B_Energies*State_B_Lambda_float
+    for x in range(len(lambdas_list_A)):
+        E1=State_A_Energies*lambdas_list_A[x]+State_B_Energies*lambdas_list_B[x]
+        dE=E1-E0
+        dE=dE.values.tolist()
+        dE=list(itertools.chain(*dE))
+        States_dicts[i].append(dE)
+for i in range(len(States_dicts)):
+    States[i]=list(itertools.chain(*States_dicts[i]))
+u_nk_df=pd.DataFrame.from_dict(States)
+u_nk_df.columns=lambdas_list_A
+lambdas_df=lambdas_df*len(State_A_Energies_df)
+lambdas_df.sort()
+u_nk_df['time']=time*len(State_A_Energies_df.columns)
+u_nk_df['fep-lambda']=lambdas_df
+u_nk_df=u_nk_df.astype('float')
+u_nk_df.set_index(['time'] ,append=False,inplace=True)
+u_nk_df.set_index(['fep-lambda'], append=True,inplace=True)
+u_nk_df.columns= u_nk_df.columns.astype('float')
+u_nk_df.dropna(axis=0,inplace=True)
+
+
+
+#%%
+steps=None
+#lambdas_list_A=lambdas_list_A
+time = [i for i in range(len(State_A_Energies_df))]
+lambdas_df=lambdas_list_A
+
+for x in States_dicts.keys():
+    for i in range(len(States_dicts[x])):
+        States_dicts[x][i]=States_dicts[x][i][:steps]
+        
+for i in range(len(States_dicts)):
+    States_dicts[i]=list(itertools.chain(*States_dicts[i]))
+u_nk_df=pd.DataFrame.from_dict(States_dicts)
+u_nk_df.columns=lambdas_list_A
+lambdas_df=lambdas_df*len(State_A_Energies_df.iloc[:steps])
+lambdas_df.sort()
+print(len(time))
+print(len(u_nk_df))
+print(lambdas_list_A)
+u_nk_df['time']=time[:steps]*len(State_A_Energies_df.columns)
+u_nk_df['fep-lambda']=lambdas_df
+u_nk_df=u_nk_df.astype('float')
+u_nk_df.set_index(['time'] ,append=False,inplace=True)
+u_nk_df.set_index(['fep-lambda'], append=True,inplace=True)
+u_nk_df.columns= u_nk_df.columns.astype('float')
+u_nk_df.dropna(axis=0,inplace=True)
+
+BAR_df=Estimators.BAR().fit(u_nk_df)
+BAR_dG = BAR_df.delta_f_.loc[0.00, 1.00]
+return BAR_dG
+
