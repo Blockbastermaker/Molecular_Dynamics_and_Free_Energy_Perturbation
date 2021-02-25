@@ -300,7 +300,7 @@ class Estimators():
         u_nk_df.columns= u_nk_df.columns.astype('float')
         u_nk_df.dropna(axis=0,inplace=True)
     
-        BAR_df=Estimators.BAR().fit(u_nk_df)
+        BAR_df=BAR.fit(u_nk_df)
         BAR_dG = BAR_df.delta_f_.loc[0.00, 1.00]
         return BAR_dG
 
