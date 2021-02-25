@@ -372,7 +372,6 @@ class dE():
                 a=float(re.split('_',lam)[1])
                 b=float(x)
                 if a<b:
-                    print(lam, x)
                     nf= str(b)+'_'+str(a)
                     dgf_dict_matrix[nf]=dg
 
@@ -382,7 +381,6 @@ class dE():
                 a=float(re.split('_',lam)[1])
                 b=float(x)
                 if a>b:
-                    print(lam, x)
                     nr= str(b)+'_'+str(a)
                     dgr_dict_matrix[nr]=dg
 
