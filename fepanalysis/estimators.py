@@ -287,6 +287,8 @@ class Estimators():
             States_dicts[i]=list(itertools.chain(*States_dicts[i]))
         u_nk_df=pd.DataFrame.from_dict(States_dicts)
         u_nk_df.columns=lambdas_list_A
+        print(lambdas_list_A)
+        print(lambdas_df)
         lambdas_df=lambdas_df*len(State_A_Energies_df.iloc[:steps])
         lambdas_df.sort()
         u_nk_df['time']=time[:steps]*len(State_A_Energies_df.columns)
@@ -294,7 +296,7 @@ class Estimators():
         u_nk_df=u_nk_df.astype('float')
         u_nk_df.set_index(['time'] ,append=False,inplace=True)
         u_nk_df.set_index(['fep-lambda'], append=True,inplace=True)
-        u_nk_df.columns= dEx.columns.astype('float')
+        u_nk_df.columns= u_nk_df.columns.astype('float')
         u_nk_df.dropna(axis=0,inplace=True)
     
         BAR_df=Estimators.BAR().fit(u_nk_df)
