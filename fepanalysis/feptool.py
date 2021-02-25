@@ -42,18 +42,19 @@ def main():
     if args.estimator =='Zwanzig_Estimator':
 
         DG_df, Zwanzig_dG= estimators.Estimators.Zwanzig(dEs,None)
-        DG_df2, Zwanzig_dG= estimators.Estimators.Zwanzig_matrix_AI(dEs,None)
-        Q.dE.Get_dEs_dGs_AI(DG_df2,dEs2)
+        #DG_df2, Zwanzig_dG= estimators.Estimators.Zwanzig_matrix_AI(dEs,None)
+        #Q.dE.Get_dEs_dGs_AI(DG_df2,dEs2)
         #estimators.Estimators.Zwanzig_matrix_AI(dEs,None)
         #dU_dH_df=estimators.Estimators.Create_df_TI(State_A_df, State_B_df)
         #Zwanzig_dG = DG_df['dG_Average'].iloc[-1]
         TI_dG = estimators.Estimators.TI(State_A_df, State_B_df,None)[1]
         print("ZW: ",Zwanzig_dG)
         print("TI: ", TI_dG)
-        u_nk_df= estimators.Estimators.Create_df_BAR_MBAR(State_A_df, State_B_df)[0]
+        u_nk_df,states_dicts= estimators.Estimators.Create_df_BAR_MBAR(State_A_df, State_B_df)[0]
         BAR_df= estimators.BAR().fit(u_nk_df)
         print('BAR: ',BAR_df.delta_f_.loc[0.00, 1.00])
-        
+        BAR_df2=estimators.Estimators.Create_df_BAR_MBAR_2(states_dicts,State_A_df,State_B_df,None)
+        print('BAR2',BAR_df2)
         # from pymbar import MBAR as MBAR_
         # from alchemlyb.estimators import MBAR
         # MBAR_df= MBAR().fit(u_nk_df)
