@@ -4,6 +4,7 @@ import concurrent
 import struct
 import os
 import logging
+import re
 logger = logging.getLogger(__name__)
 
 class Binary():
