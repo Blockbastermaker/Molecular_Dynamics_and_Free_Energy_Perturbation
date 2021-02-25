@@ -274,7 +274,7 @@ class Estimators():
 
 
     def Create_df_BAR_MBAR_2(States_dicts,State_A_Energies_df,steps):
-        
+        State_A_Energies_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('State_A_Lambda',sort=False)['State_A_G'].apply(list)),orient='index')
         lambdas_list_A=list(State_A_Energies_df.columns)
         time = [i for i in range(len(State_A_Energies_df))]
         lambdas_df=[i for i in State_A_Energies_df.columns]
@@ -285,8 +285,6 @@ class Estimators():
                 
         for i in range(len(States_dicts)):
             States_dicts[i]=list(itertools.chain(*States_dicts[i]))
-        print(lambdas_list_A)
-        print(lambdas_df)
         u_nk_df=pd.DataFrame.from_dict(States_dicts)
         u_nk_df.columns=lambdas_list_A
         lambdas_df=lambdas_df*len(State_A_Energies_df.iloc[:steps])
