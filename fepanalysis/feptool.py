@@ -70,7 +70,7 @@ def main():
         print(convergenc_TI)
         
         convergenc_BAR = estimators.Estimators.Convergence(states_dicts, State_A_Energies_df,estimators.Estimators.Create_df_BAR_MBAR_2, int(args.convergence_analysis[1]), int(args.convergence_analysis[2]), int(args.convergence_analysis[3]))
-        print(convergenc_TI)
+        print(convergenc_BAR)
         plots.plotting.Plot_Convergence(convergenc_Zwanzig,convergenc_TI)
 
     if args.plot ==True:
