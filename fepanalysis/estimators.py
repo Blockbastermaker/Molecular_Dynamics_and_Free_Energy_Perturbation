@@ -268,16 +268,16 @@ class Estimators():
         u_nk_df.set_index(['fep-lambda'], append=True,inplace=True)
         u_nk_df.columns= u_nk_df.columns.astype('float')
         u_nk_df.dropna(axis=0,inplace=True)
-        return u_nk_df,States_dicts,lambdas_list_A
+        return u_nk_df,States_dicts,State_A_Energies_df
 
 
 
 
-    def Create_df_BAR_MBAR_2(States_dicts,State_A_Energies_df,lambdas_list,steps):
-
-        lambdas_list_A=lambdas_list
+    def Create_df_BAR_MBAR_2(States_dicts,State_A_Energies_df,steps):
+        
+        lambdas_list_A=list(State_A_Energies_df.columns)
         time = [i for i in range(len(State_A_Energies_df))]
-        lambdas_df=lambdas_list
+        lambdas_df=lambdas_list_A
 
         for x in States_dicts.keys():
             for i in range(len(States_dicts[x])):
