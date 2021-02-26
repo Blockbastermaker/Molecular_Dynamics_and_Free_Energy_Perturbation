@@ -38,7 +38,7 @@ def main():
 
     logger.info('Starting FEP analysis')
 
-    dEs, State_A_df, State_B_df,dEs2 = Q.parser(args)
+    dEs, State_A_df, State_B_df = Q.parser(args)
     DG_df = None
 
     if args.estimator =='Zwanzig_Estimator':
