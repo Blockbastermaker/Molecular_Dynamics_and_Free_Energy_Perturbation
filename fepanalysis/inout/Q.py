@@ -324,6 +324,10 @@ class dE():
         return (dEs)    
     
     def dEs_matrix(State_A_df,State_B_df):
+        """
+        Development in Progress !!!!!
+
+        """
         dEs_matrix=pd.DataFrame()
         Energies_df=(pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"State_A_G":State_A_df["Q_sum"] ,"State_B_Lambda":State_B_df["Lambda"],"State_B_G":State_B_df["Q_sum"],"E":State_B_df["Q_sum"] - State_A_df["Q_sum"] })).sort_values('State_A_Lambda')
 
@@ -363,6 +367,11 @@ class dE():
         return dEs_matrix
 
     def Get_dEs_dGs_AI(Zwanzig_df,dEs_matrix):
+        """
+        Development in Progress !!!!!
+
+        """
+
         dgf_dict = dict(zip(Zwanzig_df.Lambda_F,Zwanzig_df.dG_Forward))
         dgr_dict = dict(zip(Zwanzig_df.Lambda_R,Zwanzig_df.dG_Reverse))
 
@@ -426,7 +435,6 @@ def parser(args):
         State_B_df = Binary.createDataFrames(State_B_RawEnergies_Lst)
 
         dEs = dE.dE_Calculation(State_A_df, State_B_df)
-        dEs2=dEs
         #dEs2=dE.dEs_matrix(State_A_df, State_B_df)
-    return dEs, State_A_df, State_B_df,dEs2
+    return dEs, State_A_df, State_B_df#,dEs2
 

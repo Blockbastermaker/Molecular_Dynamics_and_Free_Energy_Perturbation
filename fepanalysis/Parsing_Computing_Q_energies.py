@@ -1409,3 +1409,12 @@ class BAR(BaseEstimator):
 
 
 # %%
+# %%
+# from datetime import datetime
+# start_time = datetime.now()
+# dEs =  dE_Calculation(None)
+# end_time = datetime.now()
+# print('Duration: {}'.format(end_time - start_time))
+
+# x=[i.split('\\')[1] for i in EnergyFiles_Lst]
+# x.count([i.split('\\')[1] for i in EnergyFiles_Lst][0])

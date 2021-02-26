@@ -275,7 +275,25 @@ class Estimators():
 
 
 
-    def Create_df_BAR_MBAR_2(States_dicts,State_A_Energies_df,steps):
+    def Create_df_dG_BAR(States_dicts,State_A_Energies_df,steps):
+        """
+
+        Create the input dataframe needed for the Bennett Acceptance Ratio (BAR) estimator and calculates the free energy.
+        
+            Parameters
+            ----------
+            States_dicts : Pandas DataFrame for state A energies
+            State_A_Energies_df : Pandas DataFrame for state A energies
+            steps : Integer
+                    maximum number of steps to use
+            ----------
+            Returns
+            ----------
+            BAR_dG : float 
+        
+        """
+
+
         States_dicts2=copy.deepcopy(States_dicts)
         States_dicts3={}
         lambdas_list_A=list(State_A_Energies_df.columns)
@@ -304,6 +322,22 @@ class Estimators():
         return BAR_dG
 
     def Create_df_MBAR(States_dicts,State_A_Energies_df,steps):
+        """
+
+        Create the input dataframe needed for the multistate Bennett Acceptance Ratio (MBAR) estimator and calculates the free energy..
+        
+            Parameters
+            ----------
+            States_dicts : Pandas DataFrame for state A energies
+            State_A_Energies_df : Pandas DataFrame for state A energies
+            steps : Integer
+                    maximum number of steps to use
+            ----------
+            Returns
+            ----------
+            MBAR_dG : float 
+        
+        """
         States_length=[]
         for x in States_dicts.keys():
             for i in range(len(States_dicts[x])):
@@ -342,7 +376,6 @@ class Estimators():
     
         MBAR_df= MBAR().fit(u_nk_df)
         MBAR_dG = MBAR_df.delta_f_.loc[0.00, 1.00]
-        print(MBAR_dG)
         return MBAR_dG
 
 
@@ -403,6 +436,10 @@ class Estimators():
         return Convergence_df
 
     def Zwanzig_matrix_AI(dEs,steps):
+        """
+        Development in Progress.
+
+        """
         dEs_df=pd.DataFrame(-0.592*np.log(np.mean(np.exp(-dEs.iloc[:None]/0.592))))
         Lambdas_F=[]
         Lambdas_R=[]
@@ -440,7 +477,6 @@ class Estimators():
         return Zwanzig_df ,Zwanzig_Final_dG
 
 
-#from pymbar import BAR as BAR_
 
 class BAR(BaseEstimator):
     """Bennett acceptance ratio (BAR).
