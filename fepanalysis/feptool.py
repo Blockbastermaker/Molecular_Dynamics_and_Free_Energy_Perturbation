@@ -55,6 +55,8 @@ def main():
         print('BAR: ',BAR_df.delta_f_.loc[0.00, 1.00])
         BAR_df2=estimators.Estimators.Create_df_BAR_MBAR_2(states_dicts,State_A_Energies_df,None)
         print('BAR2',BAR_df2)
+        MBAR_df=estimators.Estimators.Create_df_MBAR(states_dicts,State_A_Energies_df,None)
+        print('MBAR',MBAR_df)
         # from pymbar import MBAR as MBAR_
         # from alchemlyb.estimators import MBAR
         # MBAR_df= MBAR().fit(u_nk_df)
