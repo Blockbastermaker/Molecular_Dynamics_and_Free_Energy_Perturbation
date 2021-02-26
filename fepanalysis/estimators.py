@@ -321,7 +321,7 @@ class Estimators():
         BAR_dG = BAR_df.delta_f_.loc[0.00, 1.00]
         return BAR_dG
 
-    def Create_df_MBAR(States_dicts,State_A_Energies_df,steps):
+    def Create_df_dG_MBAR(States_dicts,State_A_Energies_df,steps):
         """
 
         Create the input dataframe needed for the multistate Bennett Acceptance Ratio (MBAR) estimator and calculates the free energy..
