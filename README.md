@@ -30,12 +30,12 @@ fepanalysis toolkit can be installed by only three simple steps:
     pip install -e fepanalysis
 
 
-Optional:
+<!-- Optional:
 
     Check your installation by running the tests included in the fepanalysis folder.
 
     cd fepanalysis; python -m unittest test_fepanalysis/test_fepanalysis.py
-
+ -->
 
 TIP: Do not forget to activate your py37 environment before using fepanalysis.
 
