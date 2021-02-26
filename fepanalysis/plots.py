@@ -19,7 +19,7 @@ class plotting:
         """
         plt.plot(ZW['Number of Steps'],ZW['dG'],label= "ZW")
         plt.plot(TI['Number of Steps'],TI['dG'],label= "TI")
-        plt.plot(BAR['Number of Steps'],TI['dG'],label= "BAR")
+        plt.plot(BAR['Number of Steps'],BAR['dG'],label= "BAR")
         plt.title('Convergence Plot',fontsize=16)
         plt.xlabel("Number of Steps",fontsize=14)
         plt.ylabel("ΔG FEP (Kcal/mol)",fontsize=14)
