@@ -53,8 +53,6 @@ def main():
         u_nk_df,states_dicts,State_A_Energies_df= estimators.Estimators.Create_df_BAR_MBAR(State_A_df, State_B_df)
         BAR_df= estimators.BAR().fit(u_nk_df)
         print('BAR: ',BAR_df.delta_f_.loc[0.00, 1.00])
-        BAR_df2=estimators.Estimators.Create_df_BAR_MBAR_2(states_dicts,State_A_Energies_df,None)
-        print('BAR2',BAR_df2)
         MBAR_df=estimators.Estimators.Create_df_MBAR(states_dicts,State_A_Energies_df,None)
         print('MBAR',MBAR_df)
         # from pymbar import MBAR as MBAR_
@@ -70,11 +68,14 @@ def main():
         
         convergenc_TI = estimators.Estimators.Convergence(State_A_df, State_B_df,estimators.Estimators.TI, int(args.convergence_analysis[1]), int(args.convergence_analysis[2]), int(args.convergence_analysis[3]))
         print(convergenc_TI)
-        
+
         convergenc_BAR = estimators.Estimators.Convergence(states_dicts, State_A_Energies_df,estimators.Estimators.Create_df_BAR_MBAR_2, int(args.convergence_analysis[1]), int(args.convergence_analysis[2]), int(args.convergence_analysis[3]))
         print(convergenc_BAR)
-        plots.plotting.Plot_Convergence(convergenc_Zwanzig,convergenc_TI,convergenc_BAR)
+    
+        convergenc_MBAR = estimators.Estimators.Convergence(states_dicts, State_A_Energies_df,estimators.Estimators.Create_df_MBAR, int(args.convergence_analysis[1]), int(args.convergence_analysis[2]), int(args.convergence_analysis[3]))
+        print(convergenc_MBAR)
 
+        plots.plotting.Plot_Convergence(convergenc_Zwanzig,convergenc_TI,convergenc_BAR,convergenc_MBAR)
     if args.plot ==True:
 
         plots.plotting.Plot_Hysteresis(DG_df)
