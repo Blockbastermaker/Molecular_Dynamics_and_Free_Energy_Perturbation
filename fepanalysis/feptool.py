@@ -57,8 +57,8 @@ def main():
         print('BAR2',BAR_df2)
         BAR_df3=estimators.Estimators.Create_df_BAR_MBAR_2(states_dicts,State_A_Energies_df,None)
         print('BAR3',BAR_df3)
-        BAR_df4=estimators.Estimators.Create_df_BAR_MBAR_2(states_dicts,State_A_Energies_df,300)
-        BAR_df5=estimators.Estimators.Create_df_BAR_MBAR_2(states_dicts,State_A_Energies_df,3000)
+        BAR_df4=estimators.Estimators.Create_df_BAR_MBAR_2(states_dicts,State_A_Energies_df,None)
+        BAR_df5=estimators.Estimators.Create_df_BAR_MBAR_2(states_dicts,State_A_Energies_df,None)
         print('BAR4,5',BAR_df4,BAR_df5 )
         # from pymbar import MBAR as MBAR_
         # from alchemlyb.estimators import MBAR
