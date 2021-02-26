@@ -376,10 +376,10 @@ def Plot_PDF_Matrix():
 #if '__name__' == '__main__':
 
 #%%
-#os.chdir("/Users/nour/New_qfep/test_long/test") #MAC
-os.chdir("Z:/jobs/Qfep_NEW/1")
+os.chdir("/Users/nour/New_qfep/test_long/test") #MAC
+#os.chdir("Z:/jobs/Qfep_NEW/1")
 #os.chdir("G:/PhD/Project/En")
-EnergyFiles_Lst = [filename for filename in glob.glob("FEP3*.en")]  
+EnergyFiles_Lst = [filename for filename in glob.glob("FEP2*.en")]  
 State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadBinary(EnergyFiles_Lst)
 #State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadAndCollectBinariesInParallel(EnergyFiles_Lst)
 State_A_df = createDataFrames(State_A_RawEnergies_Lst)
@@ -1156,35 +1156,219 @@ u_nk_df.dropna(axis=0,inplace=True)
 
 
 #%%
-steps=100
-#lambdas_list_A=lambdas_list_A
-time = [i for i in range(len(State_A_Energies_df))]
-lambdas_df=lambdas_list_A
+def Create_df_BAR_MBAR(State_A_df, State_B_df):
+    
+    """
+    Create the input dataframe needed for the Bennett Acceptance Ratio (BAR) and multistate Bennett Acceptance Ratio (MBAR) estimators.
+    
+        Parameters
+        ----------
+        State_A_df : Pandas DataFrame for state A energies
+        State_B_df : Pandas DataFrame for state B energies
+        ----------
+        Returns
+        ----------
+        u_nk_df : Pandas DataFrame 
+    
+    """
+    Energies_df=(pd.DataFrame({"State_A_Lambda":State_A_df["Lambda"],"State_A_G":State_A_df["Q_sum"] ,"State_B_Lambda":State_B_df["Lambda"],"State_B_G":State_B_df["Q_sum"],"E":State_B_df["Q_sum"] - State_A_df["Q_sum"] })).sort_values('State_A_Lambda')
 
-for x in States_dicts.keys():
-    len(States_dicts[0][0][:600])
-    for i in range(len(States_dicts[x])):
-        print(i,x)
-        States_dicts[x][i]=States_dicts[x][i][:1000]
-        States_dicts[0][0][1]
-for i in range(len(States_dicts)):
-    States_dicts[i]=list(itertools.chain(*States_dicts[i]))
-u_nk_df=pd.DataFrame.from_dict(States_dicts)
-u_nk_df.columns=lambdas_list_A
-lambdas_df=lambdas_df*len(State_A_Energies_df.iloc[:steps])
-lambdas_df.sort()
-print(len(time))
-print(len(u_nk_df))
-print(lambdas_list_A)
-u_nk_df['time']=time[:steps]*len(State_A_Energies_df.columns)
-u_nk_df['fep-lambda']=lambdas_df
-u_nk_df=u_nk_df.astype('float')
-u_nk_df.set_index(['time'] ,append=False,inplace=True)
-u_nk_df.set_index(['fep-lambda'], append=True,inplace=True)
-u_nk_df.columns= u_nk_df.columns.astype('float')
-u_nk_df.dropna(axis=0,inplace=True)
+    State_A_Energies_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('State_A_Lambda',sort=False)['State_A_G'].apply(list)),orient='index')
+    State_A_Energies_df=State_A_Energies_df.transpose()
+    State_B_Energies_df=pd.DataFrame.from_dict(dict(Energies_df.groupby('State_B_Lambda',sort=False)['State_B_G'].apply(list)),orient="index") 
+    State_B_Energies_df=State_B_Energies_df.transpose()
+    lambdas_list_A=list(State_A_Energies_df.columns)
+    lambdas_list_B=list(State_B_Energies_df.columns)
 
-BAR_df=Estimators.BAR().fit(u_nk_df)
+    time= [i for i in range(len(State_A_Energies_df))]
+    lambdas_df=[i for i in State_A_Energies_df.columns]
+    States={i:[] for i in range(len(lambdas_list_A))}
+    States_dicts={i:[] for i in range(len(lambdas_list_A))}
+    for i in range(len(State_A_Energies_df.columns)):
+        State_A_Energies=State_A_Energies_df.iloc[:,[i]]
+        State_A_Energies.columns=["0"]
+        State_A_Lambda_float=State_A_Energies_df.columns[i]    
+        
+        State_B_Energies=State_B_Energies_df.iloc[:,[i]]
+        State_B_Energies.columns=["0"]
+        State_B_Lambda_float=State_B_Energies_df.columns[i]    
+        E0=State_A_Energies*State_A_Lambda_float+State_B_Energies*State_B_Lambda_float
+        for x in range(len(lambdas_list_A)):
+            E1=State_A_Energies*lambdas_list_A[x]+State_B_Energies*lambdas_list_B[x]
+            dE=E1-E0
+            dE=dE.values.tolist()
+            dE=list(itertools.chain(*dE))
+            States_dicts[i].append(dE)
+    for i in range(len(States_dicts)):
+        States[i]=list(itertools.chain(*States_dicts[i]))
+    u_nk_df=pd.DataFrame.from_dict(States)
+    u_nk_df.columns=lambdas_list_A
+    lambdas_df=lambdas_df*len(State_A_Energies_df)
+    lambdas_df.sort()
+    u_nk_df['time']=time*len(State_A_Energies_df.columns)
+    u_nk_df['fep-lambda']=lambdas_df
+    u_nk_df=u_nk_df.astype('float')
+    u_nk_df.set_index(['time'] ,append=False,inplace=True)
+    u_nk_df.set_index(['fep-lambda'], append=True,inplace=True)
+    u_nk_df.columns= u_nk_df.columns.astype('float')
+    u_nk_df.dropna(axis=0,inplace=True)
+    return u_nk_df,States_dicts,State_A_Energies_df
+
+u_nk_df,States_dicts,State_A_Energies_df= Create_df_BAR_MBAR(State_A_df, State_B_df)
+#%%
+    def Create_df_BAR_MBAR_2(States_dicts,State_A_Energies_df,steps):
+        
+        lambdas_list_A=list(State_A_Energies_df.columns)
+        time = [i for i in range(len(State_A_Energies_df))]
+        lambdas_df=lambdas_list_A
+        for x in States_dicts.keys():
+            for i in range(len(States_dicts[x])):
+                States_dicts[x][i]=States_dicts[x][i][:steps]
+                
+        for i in range(len(States_dicts)):
+            States_dicts[i]=list(itertools.chain(*States_dicts[i]))
+        u_nk_df=pd.DataFrame.from_dict(States_dicts)
+        u_nk_df.columns=lambdas_list_A
+        lambdas_df=lambdas_df*len(State_A_Energies_df.iloc[:steps])
+        lambdas_df.sort()
+        u_nk_df['time']=time[:steps]*len(State_A_Energies_df.columns)
+        u_nk_df['fep-lambda']=lambdas_df
+        u_nk_df=u_nk_df.astype('float')
+        u_nk_df.set_index(['time'] ,append=False,inplace=True)
+        u_nk_df.set_index(['fep-lambda'], append=True,inplace=True)
+        u_nk_df.columns= u_nk_df.columns.astype('float')
+        u_nk_df.dropna(axis=0,inplace=True)
+    
+        BAR_df=BAR().fit(u_nk_df)
+        BAR_dG = BAR_df.delta_f_.loc[0.00, 1.00]
+        return BAR_dG
+
+#%%
+import numpy as np
+import pandas as pd
+
+from sklearn.base import BaseEstimator
+
+
+BAR_df2=Create_df_BAR_MBAR_2(States_dicts,State_A_Energies_df,None)
+
+BAR_df=BAR().fit
+BAR_df(u_nk_df)
 BAR_dG = BAR_df.delta_f_.loc[0.00, 1.00]
-return BAR_dG
+#%%
+class BAR(BaseEstimator):
+    """Bennett acceptance ratio (BAR).
+    Parameters
+    ----------
+    maximum_iterations : int, optional
+        Set to limit the maximum number of iterations performed.
+    relative_tolerance : float, optional
+        Set to determine the relative tolerance convergence criteria.
+    method : str, optional, default='false-position'
+        choice of method to solve BAR nonlinear equations,
+        one of 'self-consistent-iteration' or 'false-position' (default: 'false-position')
+    verbose : bool, optional
+        Set to True if verbose debug output is desired.
+    Attributes
+    ----------
+    delta_f_ : DataFrame
+        The estimated dimensionless free energy difference between each state.
+    d_delta_f_ : DataFrame
+        The estimated statistical uncertainty (one standard deviation) in
+        dimensionless free energy differences.
+    states_ : list
+        Lambda states for which free energy differences were obtained.
+    """
 
+    def __init__(self, maximum_iterations=10000, relative_tolerance=1.0e-7, method='false-position', verbose=False):
+
+        self.maximum_iterations = maximum_iterations
+        self.relative_tolerance = relative_tolerance
+        self.method = method
+        self.verbose = verbose
+
+        # handle for pymbar.BAR object
+        self._bar = None
+
+    def fit(self, u_nk):
+        """
+        Compute overlap matrix of reduced potentials using
+        Bennett acceptance ratio.
+        Parameters
+        ----------
+        u_nk : DataFrame
+            u_nk[n,k] is the reduced potential energy of uncorrelated
+            configuration n evaluated at state k.
+        """
+        # sort by state so that rows from same state are in contiguous blocks
+        u_nk = u_nk.sort_index(level=u_nk.index.names[1:])
+
+        # get a list of the lambda states
+        self.states_ = u_nk.columns.values.tolist()
+
+        # group u_nk by lambda states
+        groups = u_nk.groupby(level=u_nk.index.names[1:])
+        N_k = [(len(groups.get_group(i)) if i in groups.groups else 0) for i in u_nk.columns]
+
+        # Now get free energy differences and their uncertainties for each step
+        deltas = np.array([])
+        d_deltas = np.array([])
+        for k in range(len(N_k) - 1):
+            # get us from lambda step k
+            uk = groups.get_group(self.states_[k])
+            # get w_F
+            w_f = uk.iloc[:, k+1] - uk.iloc[:, k]
+
+            # get us from lambda step k+1
+            uk1 = groups.get_group(self.states_[k+1])
+            # get w_R
+            w_r = uk1.iloc[:, k] - uk1.iloc[:, k+1]
+
+            # now determine df and ddf using pymbar.BAR
+            df, ddf = BAR_(w_f, w_r,
+                             method=self.method,
+                             maximum_iterations=self.maximum_iterations,
+                             relative_tolerance=self.relative_tolerance,
+                             verbose=self.verbose)
+
+            deltas = np.append(deltas, df)
+            d_deltas = np.append(d_deltas, ddf**2)
+
+        # build matrix of deltas between each state
+        adelta = np.zeros((len(deltas) + 1, len(deltas) + 1))
+        ad_delta = np.zeros_like(adelta)
+
+        for j in range(len(deltas)):
+            out = []
+            dout = []
+            for i in range(len(deltas) - j):
+                out.append(deltas[i:i + j + 1].sum())
+
+                # See https://github.com/alchemistry/alchemlyb/pull/60#issuecomment-430720742
+                # Error estimate generated by BAR ARE correlated
+
+                # Use the BAR uncertainties between two neighbour states
+                if j == 0:
+                    dout.append(d_deltas[i:i + j + 1].sum())
+                # Other uncertainties are unknown at this point
+                else:
+                    dout.append(np.nan)
+
+            adelta += np.diagflat(np.array(out), k=j + 1)
+            ad_delta += np.diagflat(np.array(dout), k=j + 1)
+
+        # yield standard delta_f_ free energies between each state
+        self.delta_f_ = pd.DataFrame(adelta - adelta.T,
+                                     columns=self.states_,
+                                     index=self.states_)
+
+        # yield standard deviation d_delta_f_ between each state
+        self.d_delta_f_ = pd.DataFrame(np.sqrt(ad_delta + ad_delta.T),
+                                       columns=self.states_,
+                                       index=self.states_)
+
+        return self
+
+
+
+# %%
