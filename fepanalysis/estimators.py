@@ -290,10 +290,11 @@ class Estimators():
         lambdas_df=lambdas_df*len(State_A_Energies_df.iloc[:steps])
         lambdas_df.sort()
         print(u_nk_df)
+        print(len(lambdas_df))
         print(len(time[:steps]))
         print(len(u_nk_df))
         time = [i for i in range(len(u_nk_df))]
-        u_nk_df['time']=time[:steps]*len(State_A_Energies_df.columns)
+        u_nk_df['time']=time#[:steps]*len(State_A_Energies_df.columns)
         u_nk_df['fep-lambda']=lambdas_df
         u_nk_df=u_nk_df.astype('float')
         u_nk_df.set_index(['time'] ,append=False,inplace=True)
