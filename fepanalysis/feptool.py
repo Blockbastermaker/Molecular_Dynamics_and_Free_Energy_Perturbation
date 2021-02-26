@@ -53,7 +53,7 @@ def main():
         u_nk_df,states_dicts,State_A_Energies_df= estimators.Estimators.Create_df_BAR_MBAR(State_A_df, State_B_df)
         BAR_df= estimators.BAR().fit(u_nk_df)
         print('BAR: ',BAR_df.delta_f_.loc[0.00, 1.00])
-        BAR_df2=estimators.Estimators.Create_df_BAR_MBAR_2(states_dicts,State_A_Energies_df,100000)
+        BAR_df2=estimators.Estimators.Create_df_BAR_MBAR_2(states_dicts,State_A_Energies_df,None)
         print('BAR2',BAR_df2)
         BAR_df3=estimators.Estimators.Create_df_BAR_MBAR_2(states_dicts,State_A_Energies_df,None)
         print('BAR3',BAR_df3)
