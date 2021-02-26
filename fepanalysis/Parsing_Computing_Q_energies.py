@@ -1216,18 +1216,20 @@ def Create_df_BAR_MBAR(State_A_df, State_B_df):
 
 u_nk_df,States_dicts,State_A_Energies_df= Create_df_BAR_MBAR(State_A_df, State_B_df)
 #%%
+import copy
     def Create_df_BAR_MBAR_2(States_dicts,State_A_Energies_df,steps):
-        
+        States_dicts2=copy.deepcopy(States_dicts)
+        States_dicts3={}
         lambdas_list_A=list(State_A_Energies_df.columns)
         time = [i for i in range(len(State_A_Energies_df))]
         lambdas_df=lambdas_list_A
         for x in States_dicts.keys():
             for i in range(len(States_dicts[x])):
-                States_dicts[x][i]=States_dicts[x][i][:steps]
+                States_dicts2[x][i]=States_dicts[x][i][:steps]
                 
-        for i in range(len(States_dicts)):
-            States_dicts[i]=list(itertools.chain(*States_dicts[i]))
-        u_nk_df=pd.DataFrame.from_dict(States_dicts)
+        for i in range(len(States_dicts2)):
+            States_dicts3[i]=list(itertools.chain(*States_dicts2[i]))
+        u_nk_df=pd.DataFrame.from_dict(States_dicts3)
         u_nk_df.columns=lambdas_list_A
         lambdas_df=lambdas_df*len(State_A_Energies_df.iloc[:steps])
         lambdas_df.sort()
