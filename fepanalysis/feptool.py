@@ -57,7 +57,7 @@ def main():
         print('MBAR',MBAR_df)
         # from pymbar import MBAR as MBAR_
         # from alchemlyb.estimators import MBAR
-        # MBAR_df= MBAR().fit(u_nk_df)
+        MBAR_df= MBAR().fit(u_nk_df)
         # print('MBAR: ',MBAR_df.delta_f_.loc[0.00, 1.00])
         
     if args.convergence_analysis is not None:
