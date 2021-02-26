@@ -340,6 +340,7 @@ class Estimators():
     
         MBAR_df= MBAR().fit(u_nk_df)
         MBAR_dG = MBAR_df.delta_f_.loc[0.00, 1.00]
+        print(MBAR_dG)
         return MBAR_dG
 
 

@@ -63,19 +63,19 @@ def main():
     if args.convergence_analysis is not None:
         args.convergence_analysis=args.convergence_analysis[0].split(',')
 
-        convergenc_Zwanzig = estimators.Estimators.Convergence(dEs,'BLANK',estimators.Estimators.Zwanzig, int(args.convergence_analysis[1]), int(args.convergence_analysis[2]), int(args.convergence_analysis[3]))
-        print(convergenc_Zwanzig)
+        # convergenc_Zwanzig = estimators.Estimators.Convergence(dEs,'BLANK',estimators.Estimators.Zwanzig, int(args.convergence_analysis[1]), int(args.convergence_analysis[2]), int(args.convergence_analysis[3]))
+        # print(convergenc_Zwanzig)
         
-        convergenc_TI = estimators.Estimators.Convergence(State_A_df, State_B_df,estimators.Estimators.TI, int(args.convergence_analysis[1]), int(args.convergence_analysis[2]), int(args.convergence_analysis[3]))
-        print(convergenc_TI)
+        # convergenc_TI = estimators.Estimators.Convergence(State_A_df, State_B_df,estimators.Estimators.TI, int(args.convergence_analysis[1]), int(args.convergence_analysis[2]), int(args.convergence_analysis[3]))
+        # print(convergenc_TI)
 
-        convergenc_BAR = estimators.Estimators.Convergence(states_dicts, State_A_Energies_df,estimators.Estimators.Create_df_BAR_MBAR_2, int(args.convergence_analysis[1]), int(args.convergence_analysis[2]), int(args.convergence_analysis[3]))
-        print(convergenc_BAR)
+        # convergenc_BAR = estimators.Estimators.Convergence(states_dicts, State_A_Energies_df,estimators.Estimators.Create_df_BAR_MBAR_2, int(args.convergence_analysis[1]), int(args.convergence_analysis[2]), int(args.convergence_analysis[3]))
+        # print(convergenc_BAR)
     
         convergenc_MBAR = estimators.Estimators.Convergence(states_dicts, State_A_Energies_df,estimators.Estimators.Create_df_MBAR, int(args.convergence_analysis[1]), int(args.convergence_analysis[2]), int(args.convergence_analysis[3]))
         print(convergenc_MBAR)
 
-        plots.plotting.Plot_Convergence(convergenc_Zwanzig,convergenc_TI,convergenc_BAR,convergenc_MBAR)
+       # plots.plotting.Plot_Convergence(convergenc_Zwanzig,convergenc_TI,convergenc_BAR,convergenc_MBAR)
     if args.plot ==True:
 
         plots.plotting.Plot_Hysteresis(DG_df)
