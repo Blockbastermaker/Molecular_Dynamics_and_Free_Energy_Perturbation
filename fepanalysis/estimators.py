@@ -2,6 +2,8 @@ import numpy as np
 from numpy.core.numeric import _rollaxis_dispatcher
 import pandas as pd
 from pymbar import BAR as BAR_
+from pymbar import MBAR as MBAR_
+from alchemlyb.estimators import MBAR
 from sklearn.base import BaseEstimator
 import copy
 import re
@@ -300,6 +302,47 @@ class Estimators():
         BAR_df=BAR().fit(u_nk_df)
         BAR_dG = BAR_df.delta_f_.loc[0.00, 1.00]
         return BAR_dG
+
+    def Create_df_MBAR(States_dicts,State_A_Energies_df,steps):
+        States_length=[]
+        for x in States_dicts.keys():
+            for i in range(len(States_dicts[x])):
+                States_length.append(len(States_dicts[x][i]))       
+        if min(States_length)==max(States_length):
+            States_dicts2=copy.deepcopy(States_dicts)
+        else:
+            print("energy files dosn't have the same length",'min',min(States_length),'max',max(States_length))
+            for x in States_dicts.keys():
+                for i in range(len(States_dicts[x])):
+                    States_dicts[x][i]=States_dicts[x][i][:min(States_length)]     
+            States_dicts2=copy.deepcopy(States_dicts)      
+        States_dicts3={}
+        lambdas_list_A=list(State_A_Energies_df.columns)
+        time = [i for i in range(len(State_A_Energies_df))]
+        lambdas_df=lambdas_list_A
+        for x in States_dicts.keys():
+            for i in range(len(States_dicts[x])):
+                States_dicts2[x][i]=States_dicts[x][i][:steps]
+                
+        for i in range(len(States_dicts2)):
+            States_dicts3[i]=list(itertools.chain(*States_dicts2[i]))
+        u_nk_df=pd.DataFrame.from_dict(States_dicts3)
+        u_nk_df.columns=lambdas_list_A
+        lambdas_df=lambdas_df*len(State_A_Energies_df.iloc[:steps])
+        lambdas_df.sort()
+        u_nk_df['time']=time[:steps]*len(State_A_Energies_df.columns)
+        u_nk_df['fep-lambda']=lambdas_df
+        u_nk_df=u_nk_df.astype('float')
+        u_nk_df.set_index(['time'] ,append=False,inplace=True)
+        u_nk_df.set_index(['fep-lambda'], append=True,inplace=True)
+        u_nk_df.columns= u_nk_df.columns.astype('float')
+        u_nk_df.dropna(axis=0,inplace=True)
+    
+        MBAR_df= MBAR().fit(u_nk_df)
+        MBAR_dG = MBAR_df.delta_f_.loc[0.00, 1.00]
+        return MBAR_dG
+
+
 
     def Convergence(df1,df2,Estimator,StepsChunk_Int,ReplicatiesCount_Int,EnergyOutputInterval_Int):
                                         # the last and first steps are not included in the reading
