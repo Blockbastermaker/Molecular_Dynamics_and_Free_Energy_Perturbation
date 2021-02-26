@@ -276,7 +276,7 @@ class Estimators():
     def Create_df_BAR_MBAR_2(States_dicts,State_A_Energies_df,steps):
         States_dicts_2={}
         lambdas_list_A=list(State_A_Energies_df.columns)
-        time = [i for i in range(len(State_A_Energies_df))]
+        #time = [i for i in range(len(State_A_Energies_df))]
         lambdas_df=lambdas_list_A
         for x in States_dicts.keys():
             for i in range(len(States_dicts[x])):
@@ -292,7 +292,7 @@ class Estimators():
         print(u_nk_df)
         print(len(time[:steps]))
         print(len(u_nk_df))
-        
+        time = [i for i in range(len(u_nk_df))]
         u_nk_df['time']=time[:steps]*len(State_A_Energies_df.columns)
         u_nk_df['fep-lambda']=lambdas_df
         u_nk_df=u_nk_df.astype('float')
