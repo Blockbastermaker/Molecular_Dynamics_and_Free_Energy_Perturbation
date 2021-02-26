@@ -344,7 +344,7 @@ class Estimators():
 
         elif isinstance(df2, pd.DataFrame) and not isinstance(df1, pd.DataFrame):
             #Estimator(df1,df2,steps_limit)
-            dGs_Lst=[print(steps_limit) for steps_limit in range((StepsChunk_Int-2)*ReplicatiesCount_Int,len(df2)+1,StepsChunk_Int*ReplicatiesCount_Int)]
+            dGs_Lst=[Estimators.Create_df_BAR_MBAR_2(df1,df2,steps_limit) for steps_limit in range((StepsChunk_Int-2)*ReplicatiesCount_Int,len(df2)+1,StepsChunk_Int*ReplicatiesCount_Int)]
             StepsChunk_Lst=[EnergyOutputInterval_Int*steps_limit/ReplicatiesCount_Int for steps_limit in range((StepsChunk_Int-2)*ReplicatiesCount_Int,len(df2)+1,StepsChunk_Int*ReplicatiesCount_Int)]
         else:
             dGs_Lst=[Estimator(df1,steps_limit)[1] for steps_limit in range((StepsChunk_Int-2)*ReplicatiesCount_Int,len(df1)+1,StepsChunk_Int*ReplicatiesCount_Int)]
