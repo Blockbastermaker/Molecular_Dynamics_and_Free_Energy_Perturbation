@@ -287,7 +287,7 @@ class Estimators():
             States_dicts_2[i]=list(itertools.chain(*States_dicts[i]))
         u_nk_df=pd.DataFrame.from_dict(States_dicts_2)
         u_nk_df.columns=lambdas_list_A
-        lambdas_df=lambdas_df*len(State_A_Energies_df.iloc[:steps])
+        lambdas_df=lambdas_df*int(len(u_nk_df))
         lambdas_df.sort()
         print(u_nk_df)
         print(len(lambdas_df))
