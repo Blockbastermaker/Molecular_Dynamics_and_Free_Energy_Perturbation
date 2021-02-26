@@ -280,7 +280,7 @@ class Estimators():
         lambdas_df=lambdas_list_A
         for x in States_dicts.keys():
             for i in range(len(States_dicts[x])):
-                print(len(States_dicts[x])
+                print(len(States_dicts[x]))
                 States_dicts[x][i]=States_dicts[x][i][:steps]
                 
         for i in range(len(States_dicts)):
