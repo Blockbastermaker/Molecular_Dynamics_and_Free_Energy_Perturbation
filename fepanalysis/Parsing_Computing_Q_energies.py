@@ -377,9 +377,9 @@ def Plot_PDF_Matrix():
 
 #%%
 #os.chdir("/Users/nour/New_qfep/test_long/test") #MAC
-os.chdir("Z:/jobs/Qfep_NEW/qfep_small")
+os.chdir("Z:/jobs/Qfep_NEW/1")
 #os.chdir("G:/PhD/Project/En")
-EnergyFiles_Lst = [filename for filename in glob.glob("FEP1*.en")]  
+EnergyFiles_Lst = [filename for filename in glob.glob("FEP3*.en")]  
 State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadBinary(EnergyFiles_Lst)
 #State_A_RawEnergies_Lst, State_B_RawEnergies_Lst = ReadAndCollectBinariesInParallel(EnergyFiles_Lst)
 State_A_df = createDataFrames(State_A_RawEnergies_Lst)
@@ -1156,15 +1156,17 @@ u_nk_df.dropna(axis=0,inplace=True)
 
 
 #%%
-steps=None
+steps=100
 #lambdas_list_A=lambdas_list_A
 time = [i for i in range(len(State_A_Energies_df))]
 lambdas_df=lambdas_list_A
 
 for x in States_dicts.keys():
+    len(States_dicts[0][0][:600])
     for i in range(len(States_dicts[x])):
-        States_dicts[x][i]=States_dicts[x][i][:steps]
-        
+        print(i,x)
+        States_dicts[x][i]=States_dicts[x][i][:1000]
+        States_dicts[0][0][1]
 for i in range(len(States_dicts)):
     States_dicts[i]=list(itertools.chain(*States_dicts[i]))
 u_nk_df=pd.DataFrame.from_dict(States_dicts)
