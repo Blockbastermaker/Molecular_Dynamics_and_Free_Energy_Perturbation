@@ -307,11 +307,13 @@ class Estimators():
         States_length=[]
         for x in States_dicts.keys():
             for i in range(len(States_dicts[x])):
-                States_length.append(len(States_dicts[x][i]))       
+                States_length.append(len(States_dicts[x][i]))
+                print(len(States_dicts[x][i]))       
         if min(States_length)==max(States_length):
+            print(min(States_length), max(States_length))
             States_dicts2=copy.deepcopy(States_dicts)
         else:
-            print("energy files dosn't have the same length",'min',min(States_length),'max',max(States_length))
+            print("energy files dosen't have the same length",'min',min(States_length),'max',max(States_length))
             for x in States_dicts.keys():
                 for i in range(len(States_dicts[x])):
                     States_dicts[x][i]=States_dicts[x][i][:min(States_length)]     
