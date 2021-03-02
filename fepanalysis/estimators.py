@@ -475,6 +475,7 @@ class Estimators():
         return Zwanzig_df ,Zwanzig_Final_dG
 
     def Zwanzig_matrix_AI2(dEs_matrix,steps,name):
+        dEs_matrix=dEs_matrix.transpose()
         dEs_df=pd.DataFrame(-0.592*np.log(np.mean(np.exp(-dEs_matrix.iloc[:steps]/0.592))))
         dEs_df.columns=["dG"]
         dEs_df['ID']=name
