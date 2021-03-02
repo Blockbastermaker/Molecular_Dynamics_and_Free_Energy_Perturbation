@@ -47,7 +47,7 @@ def main():
         # DG_df2, Zwanzig_dG= estimators.Estimators.Zwanzig_matrix_AI(dEs,None)
         #Q.dE.Get_dEs_dGs_AI(DG_df2,dEs2)
         # #estimators.Estimators.Zwanzig_matrix_AI(dEs,None)
-        Zwanzig_dG= estimators.Estimators.Zwanzig_matrix_AI2(dEs2,None,args.dEs_dGs_file_name[0])
+        Zwanzig_dG= estimators.Estimators.Zwanzig_matrix_AI2(dEs2,None,args.dEs_dGs_file_name)
         # dU_dH_df=estimators.Estimators.Create_df_TI(State_A_df, State_B_df)
         # Zwanzig_dG = DG_df['dG_Average'].iloc[-1]
         # TI_dG = estimators.Estimators.TI(State_A_df, State_B_df,None)[1]
