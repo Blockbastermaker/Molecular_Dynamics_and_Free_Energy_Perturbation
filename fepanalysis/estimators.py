@@ -478,9 +478,10 @@ class Estimators():
         dEs_df=pd.DataFrame(-0.592*np.log(np.mean(np.exp(-dEs_matrix.iloc[:steps]/0.592))))
         dEs_df.columns=["dG"]
         dEs_df['ID']=name
-        dEs_df.set_index(['ID'], append=True,inplace=True) 
         dEs_matrix=dEs_matrix.transpose()
         dEs_dGs_AI=pd.concat([dEs_df, dEs_matrix], axis=1)
+        dEs_dGs_AI.set_index(['ID'], append=True,inplace=True) 
+
         dEs_dGs_AI.to_csv('dEs_dGs_AI'+str(name)+'.csv', index=True)
 
 
