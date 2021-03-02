@@ -435,6 +435,6 @@ def parser(args):
         State_B_df = Binary.createDataFrames(State_B_RawEnergies_Lst)
 
         dEs = dE.dE_Calculation(State_A_df, State_B_df)
-        #dEs2=dE.dEs_matrix(State_A_df, State_B_df)
-    return dEs, State_A_df, State_B_df#,dEs2
+        dEs2=dE.dEs_matrix(State_A_df, State_B_df)
+    return dEs, State_A_df, State_B_df,dEs2
 

@@ -474,6 +474,15 @@ class Estimators():
         Zwanzig_df.to_csv('Zwanzig_df_lambdas_F-R.csv')
         return Zwanzig_df ,Zwanzig_Final_dG
 
+    def Zwanzig_matrix_AI2(dEs_matrix,steps,name):
+        dEs_df=pd.DataFrame(-0.592*np.log(np.mean(np.exp(-dEs_matrix.iloc[:steps]/0.592))))
+        dEs_df.columns=["dG"]
+        dEs_df['ID']=name
+        dEs_df.set_index(['ID'], append=True,inplace=True) 
+        dEs_matrix=dEs_matrix.transpose()
+        dEs_dGs_AI=pd.concat([dEs_df, dEs_matrix], axis=1)
+        dEs_dGs_AI.to_csv('dEs_dGs_AI'+str(name)+'.csv', index=True)
+
 
 
 class BAR(BaseEstimator):

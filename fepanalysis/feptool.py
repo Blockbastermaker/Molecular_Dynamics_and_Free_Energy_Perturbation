@@ -38,28 +38,29 @@ def main():
 
     logger.info('Starting FEP analysis')
 
-    dEs, State_A_df, State_B_df = Q.parser(args)
+    dEs, State_A_df, State_B_df,dEs2 = Q.parser(args)
     DG_df = None
 
     if args.estimator =='Zwanzig_Estimator':
 
-        DG_df, Zwanzig_dG= estimators.Estimators.Zwanzig(dEs,None)
-        DG_df2, Zwanzig_dG= estimators.Estimators.Zwanzig_matrix_AI(dEs,None)
-        # #Q.dE.Get_dEs_dGs_AI(DG_df2,dEs2)
+        # DG_df, Zwanzig_dG= estimators.Estimators.Zwanzig(dEs,None)
+        # DG_df2, Zwanzig_dG= estimators.Estimators.Zwanzig_matrix_AI(dEs,None)
+        #Q.dE.Get_dEs_dGs_AI(DG_df2,dEs2)
         # #estimators.Estimators.Zwanzig_matrix_AI(dEs,None)
-        dU_dH_df=estimators.Estimators.Create_df_TI(State_A_df, State_B_df)
-        Zwanzig_dG = DG_df['dG_Average'].iloc[-1]
-        TI_dG = estimators.Estimators.TI(State_A_df, State_B_df,None)[1]
-        print("ZW: ",Zwanzig_dG)
-        print("TI: ", TI_dG)
-        u_nk_df,states_dicts,State_A_Energies_df= estimators.Estimators.Create_df_BAR_MBAR(State_A_df, State_B_df)
-        BAR_dG= estimators.BAR().fit(u_nk_df)
-        print('BAR: ',BAR_dG.delta_f_.loc[0.00, 1.00])
-        # MBAR_df=estimators.Estimators.Create_df_MBAR(states_dicts,State_A_Energies_df,None)
-        # print('MBAR',MBAR_df)
+        Zwanzig_dG= estimators.Estimators.Zwanzig_matrix_AI2(dEs2,None,args.dEs_dGs_file_name[0])
+        # dU_dH_df=estimators.Estimators.Create_df_TI(State_A_df, State_B_df)
+        # Zwanzig_dG = DG_df['dG_Average'].iloc[-1]
+        # TI_dG = estimators.Estimators.TI(State_A_df, State_B_df,None)[1]
+        # # print("ZW: ",Zwanzig_dG)
+        # print("TI: ", TI_dG)
+        # u_nk_df,states_dicts,State_A_Energies_df= estimators.Estimators.Create_df_BAR_MBAR(State_A_df, State_B_df)
+        # BAR_dG= estimators.BAR().fit(u_nk_df)
+        # print('BAR: ',BAR_dG.delta_f_.loc[0.00, 1.00])
+        # # MBAR_df=estimators.Estimators.Create_df_MBAR(states_dicts,State_A_Energies_df,None)
+        # # print('MBAR',MBAR_df)
 
-        MBAR_df= MBAR().fit(u_nk_df)
-        print('MBAR: ',MBAR_df.delta_f_.loc[0.00, 1.00])
+        # MBAR_df= MBAR().fit(u_nk_df)
+        # print('MBAR: ',MBAR_df.delta_f_.loc[0.00, 1.00])
         
     if args.convergence_analysis is not None:
         args.convergence_analysis=args.convergence_analysis[0].split(',')
