@@ -4,7 +4,7 @@ from .inout import Q
 from . import estimators
 from . import tools
 from . import plots
-from pymbar import MBAR as MBAR_
+from pymbar import MBAR as MBAR_ 
 from alchemlyb.estimators import MBAR
 import os
 import logging
